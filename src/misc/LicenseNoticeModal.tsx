@@ -5,12 +5,12 @@ import { GenericModal } from "../GenericModal";
 
 export interface LicenseNoticeModalProps {
   open: boolean;
-  on关闭: () => void;
+  onClose: () => void;
 }
 
 export const LicenseNoticeModal = ({
   open,
-  on关闭,
+  onClose,
 }: LicenseNoticeModalProps) => {
   const ref = useModalRef(open, true);
 
@@ -18,7 +18,7 @@ export const LicenseNoticeModal = ({
     <GenericModal
       ref={ref}
       className="min-w-min w-[60vw]"
-      on关闭={on关闭}
+      onClose={onClose}
     >
       <div>
         <div className="flex justify-between items-start">
@@ -29,9 +29,9 @@ export const LicenseNoticeModal = ({
           </p>
           <button
             className="p-1.5 rounded-md bg-gray-100 text-black hover:bg-gray-300"
-            onClick={on关闭}
+            onClick={onClose}
           >
-            关闭
+            Close
           </button>
         </div>
         <pre className="m-4 font-mono text-xs">{NOTICE}</pre>

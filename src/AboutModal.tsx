@@ -45,7 +45,7 @@ import { ExternalLink } from "./misc/ExternalLink";
 
 export interface AboutModalProps {
   open: boolean;
-  on关闭: () => void;
+  onClose: () => void;
 }
 
 enum SponsorSize {
@@ -175,11 +175,11 @@ const sponsors = [
   },
 ];
 
-export const AboutModal = ({ open, on关闭 }: AboutModalProps) => {
+export const AboutModal = ({ open, onClose }: AboutModalProps) => {
   const ref = useModalRef(open, true);
 
   return (
-    <GenericModal ref={ref} className="min-w-min w-[70vw]" on关闭={on关闭}>
+    <GenericModal ref={ref} className="min-w-min w-[70vw]" onClose={onClose}>
       <div className="flex justify-between items-start">
         <p>
           The ZMK Project:{" "}
@@ -194,9 +194,9 @@ export const AboutModal = ({ open, on关闭 }: AboutModalProps) => {
         </p>
         <button
           className="p-1.5 rounded-md bg-gray-100 text-black hover:bg-gray-300"
-          onClick={on关闭}
+          onClick={onClose}
         >
-          关闭
+          Close
         </button>
       </div>
       <div>
