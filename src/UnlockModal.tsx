@@ -1,5 +1,4 @@
 import { useContext, useMemo } from "react";
-
 import type { RpcTransport } from "@zmkfirmware/zmk-studio-ts-client/transport/index";
 import type { AvailableDevice } from "./tauri/index";
 import { LockStateContext } from "./rpc/LockStateContext";
@@ -29,22 +28,27 @@ export const UnlockModal = ({}: UnlockModalProps) => {
       !!conn.conn && lockState != LockState.ZMK_STUDIO_CORE_LOCK_STATE_UNLOCKED,
     [conn, lockState]
   );
+
   const dialog = useModalRef(open, false, false);
 
   return (
     <GenericModal ref={dialog}>
-      <h1 className="text-xl">Unlock To Continue</h1>
-      <p>
-        For security reasons, your keyboard requires unlocking before using ZMK
-        Studio.
-      </p>
-      <p>
-        If studio unlocking hasn't been added to your keymap or a combo, see the{" "}
-        <ExternalLink href="https://zmk.dev/docs/keymaps/behaviors/studio-unlock">
-          Studio Unlock Behavior
-        </ExternalLink>{" "}
-        documentation for more infomation.
-      </p>
+      <div className="flex flex-col items-center gap-3 py-2">
+        <div className="text-4xl">🔐</div>
+        <h1 className="text-xl font-bold">请解锁键盘</h1>
+        <p className="text-sm opacity-70 text-center">
+          出于安全考虑，使用改键功能前需要先解锁键盘。
+          请按下键盘上的 <strong>Studio 解锁键</strong>。
+        </p>
+        <div className="bg-base-200 rounded-lg p-3 text-sm mt-1">
+          <p className="opacity-60">
+            💡 如果你的键位映射中没有解锁键，请参阅{" "}
+            <ExternalLink href="https://zmk.dev/docs/keymaps/behaviors/studio-unlock">
+              Studio 解锁文档
+            </ExternalLink>
+          </p>
+        </div>
+      </div>
     </GenericModal>
   );
 };

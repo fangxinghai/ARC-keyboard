@@ -65,103 +65,109 @@ export const AppHeader = ({
   );
 
   return (
-    <header className="top-0 left-0 right-0 grid grid-cols-[1fr_auto_1fr] items-center justify-between h-10 max-w-full">
-      <div className="flex px-3 items-center gap-1">
-        <img src="/zmk.svg" alt="ZMK Logo" className="h-8 rounded" />
-        <p>Studio</p>
+    <header className="top-0 left-0 right-0 grid grid-cols-[1fr_auto_1fr] items-center justify-between h-12 max-w-full border-b border-base-300">
+      <div className="flex px-3 items-center gap-2">
+        <span className="text-lg font-bold tracking-wider bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          ARC
+        </span>
+        <span className="text-xs opacity-40">改键器</span>
       </div>
       <GenericModal ref={showSettingsRef} className="max-w-[50vw]">
-        <h2 className="my-2 text-lg">Restore Stock Settings</h2>
-        <div>
-          <p>
-            Settings reset will remove any customizations previously made in ZMK
-            Studio and restore the stock keymap
-          </p>
-          <p>Continue?</p>
-          <div className="flex justify-end my-2 gap-3">
+        <div className="flex flex-col gap-3 py-1">
+          <h2 className="text-lg font-bold">⚠️ 恢复出厂设置</h2>
+          <div className="bg-base-200 rounded-lg p-3 text-sm">
+            <p className="opacity-70">
+              此操作将清除所有自定义键位设置，恢复为默认键位映射。
+            </p>
+          </div>
+          <p className="text-sm font-medium">确定要继续吗？</p>
+          <div className="flex justify-end gap-2">
             <Button
-              className="rounded bg-base-200 hover:bg-base-300 px-3 py-2"
+              className="rounded-lg bg-base-200 hover:bg-base-300 px-4 py-2 text-sm transition-colors"
               onPress={() => setShowSettingsReset(false)}
             >
-              Cancel
+              取消
             </Button>
             <Button
-              className="rounded bg-base-200 hover:bg-base-300 px-3 py-2"
+              className="rounded-lg bg-error text-error-content hover:opacity-80 px-4 py-2 text-sm transition-colors"
               onPress={() => {
                 setShowSettingsReset(false);
                 onResetSettings?.();
               }}
             >
-              Restore Stock Settings
+              确认恢复
             </Button>
           </div>
         </div>
       </GenericModal>
       <MenuTrigger>
         <Button
-          className="text-center rac-disabled:opacity-0 hover:bg-base-300 transition-all duration-100 p-1 pl-2 rounded-lg"
+          className="text-center rac-disabled:opacity-0 hover:bg-base-300 transition-all duration-100 p-1.5 pl-3 rounded-lg text-sm"
           isDisabled={!connectedDeviceLabel}
         >
-          {connectedDeviceLabel}
-          <ChevronDown className="inline-block w-4" />
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+            {connectedDeviceLabel}
+          </span>
+          <ChevronDown className="inline-block w-4 ml-1" />
         </Button>
         <Popover>
-          <Menu className="shadow-md rounded bg-base-100 text-base-content cursor-pointer overflow-hidden">
+          <Menu className="shadow-lg rounded-lg bg-base-100 text-base-content cursor-pointer overflow-hidden border border-base-300 min-w-[140px]">
             <MenuItem
-              className="px-2 py-1 hover:bg-base-200"
+              className="px-3 py-2 hover:bg-base-200 text-sm transition-colors"
               onAction={onDisconnect}
             >
-              Disconnect
+              断开连接
             </MenuItem>
             <MenuItem
-              className="px-2 py-1 hover:bg-base-200"
+              className="px-3 py-2 hover:bg-base-200 text-sm transition-colors text-error"
               onAction={() => setShowSettingsReset(true)}
             >
-              Restore Stock Settings
+              恢复出厂设置
             </MenuItem>
           </Menu>
         </Popover>
       </MenuTrigger>
-      <div className="flex justify-end gap-1 px-2">
+      <div className="flex justify-end gap-1 px-3">
         {onUndo && (
-          <Tooltip label="Undo">
+          <Tooltip label="撤销">
             <Button
-              className="flex items-center justify-center p-1.5 rounded enabled:hover:bg-base-300 disabled:opacity-50"
+              className="flex items-center justify-center p-2 rounded-lg enabled:hover:bg-base-300 disabled:opacity-30 transition-colors"
               isDisabled={!canUndo}
               onPress={onUndo}
             >
-              <Undo2 className="inline-block w-4 mx-1" aria-label="Undo" />
+              <Undo2 className="inline-block w-4" aria-label="撤销" />
             </Button>
           </Tooltip>
         )}
 
         {onRedo && (
-          <Tooltip label="Redo">
+          <Tooltip label="重做">
             <Button
-              className="flex items-center justify-center p-1.5 rounded enabled:hover:bg-base-300 disabled:opacity-50"
+              className="flex items-center justify-center p-2 rounded-lg enabled:hover:bg-base-300 disabled:opacity-30 transition-colors"
               isDisabled={!canRedo}
               onPress={onRedo}
             >
-              <Redo2 className="inline-block w-4 mx-1" aria-label="Redo" />
+              <Redo2 className="inline-block w-4" aria-label="重做" />
             </Button>
           </Tooltip>
         )}
-        <Tooltip label="Save">
+        <Tooltip label="保存">
           <Button
-            className="flex items-center justify-center p-1.5 rounded enabled:hover:bg-base-300 disabled:opacity-50"
+            className="flex items-center justify-center p-2 rounded-lg enabled:hover:bg-success enabled:hover:text-success-content disabled:opacity-30 transition-colors"
             isDisabled={!unsaved}
             onPress={onSave}
           >
-            <Save className="inline-block w-4 mx-1" aria-label="Save" />
+            <Save className="inline-block w-4" aria-label="保存" />
           </Button>
         </Tooltip>
-        <Tooltip label="Discard">
+        <Tooltip label="撤销更改">
           <Button
-            className="flex items-center justify-center p-1.5 rounded enabled:hover:bg-base-300 disabled:opacity-50"
+            className="flex items-center justify-center p-2 rounded-lg enabled:hover:bg-error enabled:hover:text-error-content disabled:opacity-30 transition-colors"
             onPress={onDiscard}
             isDisabled={!unsaved}
           >
-            <Trash2 className="inline-block w-4 mx-1" aria-label="Discard" />
+            <Trash2 className="inline-block w-4" aria-label="撤销更改" />
           </Button>
         </Tooltip>
       </div>

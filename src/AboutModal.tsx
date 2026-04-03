@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { useModalRef } from "./misc/useModalRef";
 
 import cannonKeys from "./assets/cannonkeys.png";
@@ -45,7 +45,7 @@ import { ExternalLink } from "./misc/ExternalLink";
 
 export interface AboutModalProps {
   open: boolean;
-  onClose: () => void;
+  on关闭: () => void;
 }
 
 enum SponsorSize {
@@ -175,11 +175,11 @@ const sponsors = [
   },
 ];
 
-export const AboutModal = ({ open, onClose }: AboutModalProps) => {
+export const AboutModal = ({ open, on关闭 }: AboutModalProps) => {
   const ref = useModalRef(open, true);
 
   return (
-    <GenericModal ref={ref} className="min-w-min w-[70vw]" onClose={onClose}>
+    <GenericModal ref={ref} className="min-w-min w-[70vw]" on关闭={on关闭}>
       <div className="flex justify-between items-start">
         <p>
           The ZMK Project:{" "}
@@ -194,9 +194,9 @@ export const AboutModal = ({ open, onClose }: AboutModalProps) => {
         </p>
         <button
           className="p-1.5 rounded-md bg-gray-100 text-black hover:bg-gray-300"
-          onClick={onClose}
+          onClick={on关闭}
         >
-          Close
+          关闭
         </button>
       </div>
       <div>

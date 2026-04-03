@@ -1,4 +1,4 @@
-import { AppHeader } from "./AppHeader";
+﻿import { AppHeader } from "./AppHeader";
 
 import { create_rpc_connection } from "@zmkfirmware/zmk-studio-ts-client";
 import { call_rpc } from "./rpc/logging";
@@ -142,7 +142,7 @@ async function connect(
 
   if (!details) {
     // TODO: Show a proper toast/alert not using `window.alert`
-    window.alert("Failed to connect to the chosen device");
+    window.alert("连接设备失败，请检查连接后重试");
     return;
   }
 

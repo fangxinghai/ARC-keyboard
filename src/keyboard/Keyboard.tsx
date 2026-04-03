@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   SetStateAction,
   useCallback,
   useContext,
@@ -548,7 +548,7 @@ export default function Keyboard() {
               setKeymapScale(value);
             }}
           >
-            <option value="auto">Auto</option>
+            <option value="auto">自动</option>
             <option value={0.25}>25%</option>
             <option value={0.5}>50%</option>
             <option value={0.75}>75%</option>
