@@ -1,7 +1,6 @@
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    # Disabled: requires ZMK_STUDIO_RELEASE_TOKEN secret not available in fork
 
 permissions: {}
 
