@@ -15,24 +15,33 @@ interface BehaviorShortName {
 }
 
 const MAX_HEADER_LENGTH = 9;
+
 const shortNames: Record<string, BehaviorShortName> = BehaviorShortNames;
 
 const shortenHeader = (header: string | undefined) => {
-  if(typeof header === "undefined"){
+  if (typeof header === "undefined") {
     return "";
   }
-  // Empty string is a valid header for behaviors where we don't want to see a header, which is falsy
-  // So we use an undefined check here
-  if(typeof shortNames[header]?.short !== "undefined"){
+
+  if (typeof shortNames[header]?.short !== "undefined") {
     return shortNames[header].short;
-  } else if(header.length > MAX_HEADER_LENGTH){
+  }
+
+  // Try partial match for headers containing known names
+  for (const [key, value] of Object.entries(shortNames)) {
+    if (header.toLowerCase().includes(key.toLowerCase()) && typeof value.short !== "undefined") {
+      return value.short;
+    }
+  }
+
+  if (header.length > MAX_HEADER_LENGTH) {
     const words = header.split(/[\s,-]+/);
     const lettersPerWord = Math.trunc(MAX_HEADER_LENGTH / words.length);
-    return words.map((word) => (word.substring(0,lettersPerWord))).join("");
-  } else {
-    return header;
+    return words.map((word) => word.substring(0, lettersPerWord)).join("");
   }
-}
+
+  return header;
+};
 
 export const Key = ({
   selected = false,
@@ -45,19 +54,35 @@ export const Key = ({
 }: PropsWithChildren<KeyProps>) => {
   const pixelWidth = width * oneU - 2;
   const pixelHeight = height * oneU - 2;
+  const shortHeader = shortenHeader(header);
+
+  // Calculate font size based on key size and text length
+  const headerLen = shortHeader?.length || 0;
+  const headerFontClass = headerLen > 7 ? "text-[8px]" : headerLen > 5 ? "text-[9px]" : "text-xs";
 
   return (
     <button
-      className={`group rounded relative flex justify-center items-center cursor-pointer transition-all hover:shadow-xl hover:ring-1 hover:ring-gray-300 hover:scale-125 ${selected ? "bg-primary text-primary-content" : "bg-base-100 text-base-content"
-        }`}
+      className={`group rounded relative flex justify-center items-center cursor-pointer transition-all hover:shadow-xl hover:ring-1 hover:ring-gray-300 hover:scale-110 overflow-hidden ${
+        selected
+          ? "bg-primary text-primary-content"
+          : "bg-base-100 text-base-content"
+      }`}
       style={{
         width: `${pixelWidth}px`,
         height: `${pixelHeight}px`,
       }}
       onClick={onClick}
     >
-      <div className={`absolute text-xs ${selected ? "text-primary-content" : "z1text-base-content"} opacity-80 top-1 text-nowrap left-1/2 font-light -translate-x-1/2 text-center`}>{shortenHeader(header)}</div>
-      {children}
+      <div
+        className={`absolute ${headerFontClass} ${
+          selected ? "text-primary-content" : "text-base-content"
+        } opacity-70 top-0.5 left-0.5 right-0.5 font-light text-center truncate leading-tight`}
+      >
+        {shortHeader}
+      </div>
+      <div className="truncate max-w-full px-0.5 text-center" style={{ fontSize: pixelWidth < 50 ? '11px' : '14px' }}>
+        {children}
+      </div>
     </button>
   );
 };
