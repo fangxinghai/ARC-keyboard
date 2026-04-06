@@ -29,7 +29,6 @@ function validateBinding(
 
 interface QuickKey { label: string; page: number; id: number; w?: number; }
 
-// 108 keyboard rows
 const ROW_ESC: QuickKey[] = [
   { label: "Esc", page: 7, id: 0x29 },
   { label: "F1", page: 7, id: 0x3a }, { label: "F2", page: 7, id: 0x3b },
@@ -100,19 +99,20 @@ const ROW_CTRL: QuickKey[] = [
 ];
 const KEYBOARD_ROWS = [ROW_ESC, ROW_NUM, ROW_TAB, ROW_CAPS, ROW_SHIFT, ROW_CTRL];
 
-const MEDIA_KEYS: { label: string; zh: string; page: number; id: number }[] = [
-  { label: "Vol+", zh: "\u97F3\u91CF+", page: 12, id: 0xe9 },
-  { label: "Vol-", zh: "\u97F3\u91CF-", page: 12, id: 0xea },
-  { label: "Mute", zh: "\u9759\u97F3", page: 12, id: 0xe2 },
-  { label: "Next", zh: "\u4E0B\u4E00\u66F2", page: 12, id: 0xb5 },
-  { label: "Prev", zh: "\u4E0A\u4E00\u66F2", page: 12, id: 0xb6 },
-  { label: "Play", zh: "\u64AD\u653E/\u6682\u505C", page: 12, id: 0xcd },
-  { label: "Stop", zh: "\u505C\u6B62", page: 12, id: 0xb7 },
-  { label: "Bri+", zh: "\u4EAE\u5EA6+", page: 12, id: 0x6f },
-  { label: "Bri-", zh: "\u4EAE\u5EA6-", page: 12, id: 0x70 },
-  { label: "Calc", zh: "\u8BA1\u7B97\u5668", page: 12, id: 0x192 },
-  { label: "Web", zh: "\u6D4F\u89C8\u5668", page: 12, id: 0x196 },
-  { label: "Mail", zh: "\u90AE\u4EF6", page: 12, id: 0x18a },
+interface MediaKey { label: string; zh: string; page: number; id: number; }
+const MEDIA_KEYS: MediaKey[] = [
+  { label: "Vol+", zh: "音量+", page: 12, id: 0xe9 },
+  { label: "Vol-", zh: "音量-", page: 12, id: 0xea },
+  { label: "Mute", zh: "静音", page: 12, id: 0xe2 },
+  { label: "Next", zh: "下一曲", page: 12, id: 0xb5 },
+  { label: "Prev", zh: "上一曲", page: 12, id: 0xb6 },
+  { label: "Play", zh: "播放/暂停", page: 12, id: 0xcd },
+  { label: "Stop", zh: "停止", page: 12, id: 0xb7 },
+  { label: "Bri+", zh: "亮度+", page: 12, id: 0x6f },
+  { label: "Bri-", zh: "亮度-", page: 12, id: 0x70 },
+  { label: "Calc", zh: "计算器", page: 12, id: 0x192 },
+  { label: "Web", zh: "浏览器", page: 12, id: 0x196 },
+  { label: "Mail", zh: "邮件", page: 12, id: 0x18a },
 ];
 
 const SPECIAL_KEYS: QuickKey[] = [
@@ -127,79 +127,67 @@ const SPECIAL_KEYS: QuickKey[] = [
   { label: "KP .", page: 7, id: 0x63 },
 ];
 
-// Complete lighting names map
-const LIGHT_NAMES: Record<string, string> = {
-  "Toggle On/Off": "RGB \u5F00/\u5173",
-  "Turn On": "RGB \u5F00\u542F",
-  "Turn OFF": "RGB \u5173\u95ED",
-  "Hue Up": "\u8272\u76F8 +",
-  "Hue Down": "\u8272\u76F8 -",
-  "Saturation Up": "\u997E\u548C\u5EA6 +",
-  "Saturation Down": "\u997E\u548C\u5EA6 -",
-  "Brightness Up": "\u4EAE\u5EA6 +",
-  "Brightness Down": "\u4EAE\u5EA6 -",
-  "Speed Up": "\u901F\u5EA6 +",
-  "Speed Down": "\u901F\u5EA6 -",
-  "Next Effect": "\u4E0B\u4E00\u706F\u6548",
-  "Previous Effect": "\u4E0A\u4E00\u706F\u6548",
-  "Color": "\u989C\u8272\u8BBE\u7F6E",
-  "RGB Underglow": "RGB \u7075\u706F",
-  "Underglow": "RGB \u7075\u706F",
-  "Backlight Toggle": "\u80CC\u5149 \u5F00/\u5173",
-  "Backlight On": "\u80CC\u5149 \u5F00",
-  "Backlight Off": "\u80CC\u5149 \u5173",
-  "Backlight Brightness Up": "\u80CC\u5149 \u4EAE\u5EA6+",
-  "Backlight Brightness Down": "\u80CC\u5149 \u4EAE\u5EA6-",
-  "Backlight Cycle": "\u80CC\u5149 \u5FAA\u73AF",
-  "Backlight": "\u80CC\u5149",
-  "External Power": "\u5916\u90E8\u7535\u6E90",
-};
+// Lighting: static buttons that map to underglow behavior + specific param
+interface LightButton { zh: string; en: string; paramValue: number; }
+const RGB_BUTTONS: LightButton[] = [
+  { zh: "RGB 开/关", en: "Toggle", paramValue: 0 },
+  { zh: "RGB 开启", en: "On", paramValue: 1 },
+  { zh: "RGB 关闭", en: "Off", paramValue: 2 },
+  { zh: "色相 +", en: "Hue Up", paramValue: 3 },
+  { zh: "色相 -", en: "Hue Down", paramValue: 4 },
+  { zh: "饱和度 +", en: "Sat Up", paramValue: 5 },
+  { zh: "饱和度 -", en: "Sat Down", paramValue: 6 },
+  { zh: "亮度 +", en: "Bri Up", paramValue: 7 },
+  { zh: "亮度 -", en: "Bri Down", paramValue: 8 },
+  { zh: "速度 +", en: "Spd Up", paramValue: 9 },
+  { zh: "速度 -", en: "Spd Down", paramValue: 10 },
+  { zh: "下一灯效", en: "Next Eff", paramValue: 11 },
+  { zh: "上一灯效", en: "Prev Eff", paramValue: 12 },
+];
 
 const LAYER_NAMES: Record<string, string> = {
-  "Momentary Layer": "\u77AC\u65F6\u5C42 (MO)",
-  "Layer Tap": "\u5C42/\u6309\u952E (LT)",
-  "To Layer": "\u5207\u6362\u5230\u5C42 (TO)",
-  "Toggle Layer": "\u5207\u6362\u5C42 (TG)",
-  "Default Layer": "\u9ED8\u8BA4\u5C42 (DF)",
-  "Conditional Layer": "\u6761\u4EF6\u5C42",
+  "Momentary Layer": "瞬时层 (MO)",
+  "Layer Tap": "层/按键 (LT)",
+  "To Layer": "切换到层 (TO)",
+  "Toggle Layer": "切换层 (TG)",
+  "Default Layer": "默认层 (DF)",
+  "Conditional Layer": "条件层",
 };
 
 const OTHER_NAMES: Record<string, string> = {
-  "Bluetooth": "\u84DD\u7259",
-  "Output Selection": "\u8F93\u51FA\u5207\u6362",
-  "None": "\u65E0",
-  "Transparent": "\u900F\u660E",
-  "Reset": "\u91CD\u542F",
-  "Bootloader": "\u5F15\u5BFC\u6A21\u5F0F",
-  "Caps Word": "\u5927\u5199\u8BCD",
-  "Key Toggle": "\u6309\u952E\u9501\u5B9A",
-  "Sticky Key": "\u7C98\u6ED3\u952E",
-  "Sticky Layer": "\u7C98\u6ED3\u5C42",
-  "Mod-Tap": "\u4FEE\u9970/\u6309\u952E (MT)",
-  "Hold-Tap": "\u957F\u6309/\u70B9\u6309 (HT)",
-  "Tap Dance": "\u591A\u6B21\u70B9\u51FB (TD)",
-  "Studio Unlock": "Studio \u89E3\u9501",
-  "Soft Off": "\u8F6F\u5173\u673A",
-  "Key Repeat": "\u6309\u952E\u91CD\u590D",
+  "Bluetooth": "蓝牙",
+  "Output Selection": "输出切换",
+  "None": "无",
+  "Transparent": "透明",
+  "Reset": "重启",
+  "Bootloader": "引导模式",
+  "Caps Word": "大写词",
+  "Key Toggle": "按键锁定",
+  "Sticky Key": "粘滞键",
+  "Sticky Layer": "粘滞层",
+  "Mod-Tap": "修饰/按键 (MT)",
+  "Hold-Tap": "长按/点按 (HT)",
+  "Tap Dance": "多次点击 (TD)",
+  "Studio Unlock": "Studio 解锁",
+  "Soft Off": "软关机",
+  "Key Repeat": "按键重复",
   "Grave/Escape": "~/Esc",
+  "External Power": "外部电源",
 };
 
 type CategoryId = "keyboard" | "media" | "special" | "other" | "lighting" | "macro" | "advanced";
-
 const CATEGORIES: { id: CategoryId; label: string }[] = [
-  { id: "keyboard", label: "\u6309\u952E" },
-  { id: "media", label: "\u5A92\u4F53" },
-  { id: "special", label: "\u7279\u8272\u952E" },
-  { id: "other", label: "\u5176\u4ED6" },
-  { id: "lighting", label: "\u706F\u5149" },
-  { id: "macro", label: "\u5B8F\u6309\u952E" },
-  { id: "advanced", label: "\u9AD8\u7EA7" },
+  { id: "keyboard", label: "按键" },
+  { id: "media", label: "媒体" },
+  { id: "special", label: "特色键" },
+  { id: "other", label: "其他" },
+  { id: "lighting", label: "灯光" },
+  { id: "macro", label: "宏按键" },
+  { id: "advanced", label: "高级" },
 ];
 
-function matchBehavior(name: string, map: Record<string, string>): string {
-  // Exact match first
+function matchName(name: string, map: Record<string, string>): string {
   if (map[name]) return map[name];
-  // Partial match
   for (const [en, zh] of Object.entries(map)) {
     if (name.toLowerCase().includes(en.toLowerCase())) return zh;
   }
@@ -217,13 +205,19 @@ export const BehaviorBindingPicker = ({
   const metadata = useMemo(() => behaviors.find((b) => b.id == behaviorId)?.metadata, [behaviorId, behaviors]);
   const sortedBehaviors = useMemo(() => [...behaviors].sort((a, b) => a.displayName.localeCompare(b.displayName)), [behaviors]);
 
-  const keyPressBehavior = useMemo(() => {
-    return behaviors.find((b) => b.displayName.toLowerCase().includes("key") && b.displayName.toLowerCase().includes("press"));
-  }, [behaviors]);
+  const keyPressBehavior = useMemo(() => behaviors.find((b) => b.displayName.toLowerCase().includes("key") && b.displayName.toLowerCase().includes("press")), [behaviors]);
 
-  const lightBehaviors = useMemo(() => behaviors.filter((b) => {
+  // Find the underglow/backlight behavior
+  const underglowBehavior = useMemo(() => behaviors.find((b) => {
     const n = b.displayName.toLowerCase();
-    return n.includes("rgb") || n.includes("underglow") || n.includes("backlight") || n.includes("ext_power") || n.includes("external power");
+    return n.includes("underglow") || n.includes("rgb");
+  }), [behaviors]);
+
+  const backlightBehavior = useMemo(() => behaviors.find((b) => b.displayName.toLowerCase().includes("backlight")), [behaviors]);
+
+  const extPowerBehavior = useMemo(() => behaviors.find((b) => {
+    const n = b.displayName.toLowerCase();
+    return n.includes("ext") && n.includes("power");
   }), [behaviors]);
 
   const layerBehaviors = useMemo(() => behaviors.filter((b) => {
@@ -233,7 +227,7 @@ export const BehaviorBindingPicker = ({
 
   const otherBehaviors = useMemo(() => behaviors.filter((b) => {
     const n = b.displayName.toLowerCase();
-    const skip = (n.includes("key") && n.includes("press")) || n.includes("rgb") || n.includes("underglow") || n.includes("backlight") || n.includes("ext_power") || n.includes("external power") || n.includes("layer") || n.includes("momentary") || n.includes("conditional") || n.includes("macro");
+    const skip = (n.includes("key") && n.includes("press")) || n.includes("rgb") || n.includes("underglow") || n.includes("backlight") || (n.includes("ext") && n.includes("power")) || n.includes("layer") || n.includes("momentary") || n.includes("conditional") || n.includes("macro");
     return !skip;
   }), [behaviors]);
 
@@ -260,6 +254,13 @@ export const BehaviorBindingPicker = ({
     setParam2(0);
   };
 
+  const handleLightButton = (beh: GetBehaviorDetailsResponse | undefined, pv: number) => {
+    if (!beh) return;
+    setBehaviorId(beh.id);
+    setParam1(pv);
+    setParam2(0);
+  };
+
   const handleSelectBehavior = (bid: number) => {
     setBehaviorId(bid);
     setParam1(0);
@@ -271,59 +272,34 @@ export const BehaviorBindingPicker = ({
     return param1 || 0;
   }, [behaviorId, param1, keyPressBehavior]);
 
-  // Shared button style
-  const keyBtnClass = (isActive: boolean, extra?: string) =>
-    `flex items-center justify-center rounded text-[11px] border transition-all duration-75 ${extra || ""} ${
-      isActive
-        ? "bg-primary text-primary-content border-primary font-bold"
-        : "bg-base-100 hover:bg-base-200 text-base-content border-base-300 hover:border-primary/50 active:scale-95"
-    }`;
+  const btnClass = (active: boolean, extra?: string) =>
+    `flex items-center justify-center rounded text-[11px] border transition-all duration-75 ${extra || ""} ${active ? "bg-primary text-primary-content border-primary font-bold" : "bg-base-100 hover:bg-base-200 text-base-content border-base-300 hover:border-primary/50 active:scale-95"}`;
 
-  const behaviorBtnClass = (isActive: boolean) =>
-    `flex flex-col items-center justify-center rounded-lg text-xs border min-h-[42px] px-2 py-1 transition-all duration-75 ${
-      isActive
-        ? "bg-primary text-primary-content border-primary font-bold shadow-sm"
-        : "bg-base-100 hover:bg-base-200 text-base-content border-base-300 hover:border-primary/50 active:scale-95"
-    }`;
-
-  const renderBehaviorBtn = (b: GetBehaviorDetailsResponse, nameMap: Record<string, string>) => {
-    const isActive = behaviorId === b.id;
-    const zh = matchBehavior(b.displayName, nameMap);
-    return (
-      <button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={behaviorBtnClass(isActive)}>
-        <span className="font-medium leading-tight">{zh}</span>
-        {zh !== b.displayName && <span className={`text-[9px] mt-0.5 leading-none ${isActive ? "opacity-60" : "opacity-30"}`}>{b.displayName}</span>}
-      </button>
-    );
-  };
+  const cardBtn = (active: boolean) =>
+    `flex flex-col items-center justify-center rounded-lg text-xs border min-h-[42px] px-2 py-1 transition-all duration-75 ${active ? "bg-primary text-primary-content border-primary font-bold shadow-sm" : "bg-base-100 hover:bg-base-200 text-base-content border-base-300 hover:border-primary/50 active:scale-95"}`;
 
   return (
     <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto">
       <div className="flex gap-1 flex-wrap">
         {CATEGORIES.map((cat) => (
           <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-            className={`px-3 py-1.5 text-xs rounded-lg transition-all border ${
-              activeCategory === cat.id
-                ? "bg-primary text-primary-content border-primary font-semibold shadow-sm"
-                : "bg-base-100 hover:bg-base-200 text-base-content/70 border-base-300"
-            }`}>
+            className={`px-3 py-1.5 text-xs rounded-lg transition-all border ${activeCategory === cat.id ? "bg-primary text-primary-content border-primary font-semibold shadow-sm" : "bg-base-100 hover:bg-base-200 text-base-content/70 border-base-300"}`}>
             {cat.label}
           </button>
         ))}
       </div>
 
-      {/* 1. Keyboard 108 layout */}
+      {/* 1. Keyboard */}
       {activeCategory === "keyboard" && (
         <div className="flex flex-col gap-0.5 overflow-x-auto pb-1">
           {KEYBOARD_ROWS.map((row, ri) => (
             <div key={ri} className="flex gap-px" style={{ minWidth: "580px" }}>
               {row.map((key) => {
                 const usage = hid_usage_from_page_and_id(key.page, key.id);
-                const isActive = currentUsage === usage;
                 return (
                   <button key={`${key.page}-${key.id}`} onClick={() => handleQuickKey(key.page, key.id)}
                     style={key.w && key.w > 1 ? { flex: `${key.w} 0 0%` } : { flex: "1 0 0%" }}
-                    className={keyBtnClass(isActive, "min-h-[28px] py-0.5 whitespace-nowrap")}>
+                    className={btnClass(currentUsage === usage, "min-h-[28px] py-0.5 whitespace-nowrap")}>
                     {key.label}
                   </button>
                 );
@@ -338,12 +314,10 @@ export const BehaviorBindingPicker = ({
         <div className="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] gap-1.5">
           {MEDIA_KEYS.map((key) => {
             const usage = hid_usage_from_page_and_id(key.page, key.id);
-            const isActive = currentUsage === usage;
             return (
-              <button key={usage} onClick={() => handleQuickKey(key.page, key.id)}
-                className={behaviorBtnClass(isActive)}>
+              <button key={usage} onClick={() => handleQuickKey(key.page, key.id)} className={cardBtn(currentUsage === usage)}>
                 <span className="font-medium">{key.zh}</span>
-                <span className={`text-[9px] mt-0.5 ${isActive ? "opacity-60" : "opacity-30"}`}>{key.label}</span>
+                <span className={`text-[9px] mt-0.5 ${currentUsage === usage ? "opacity-60" : "opacity-30"}`}>{key.label}</span>
               </button>
             );
           })}
@@ -355,10 +329,8 @@ export const BehaviorBindingPicker = ({
         <div className="grid grid-cols-[repeat(auto-fill,minmax(60px,1fr))] gap-1.5">
           {SPECIAL_KEYS.map((key) => {
             const usage = hid_usage_from_page_and_id(key.page, key.id);
-            const isActive = currentUsage === usage;
             return (
-              <button key={usage} onClick={() => handleQuickKey(key.page, key.id)}
-                className={keyBtnClass(isActive, "min-h-[38px] rounded-lg")}>
+              <button key={usage} onClick={() => handleQuickKey(key.page, key.id)} className={btnClass(currentUsage === usage, "min-h-[38px] rounded-lg")}>
                 {key.label}
               </button>
             );
@@ -371,9 +343,17 @@ export const BehaviorBindingPicker = ({
         <div className="flex flex-col gap-3">
           {layerBehaviors.length > 0 && (
             <div>
-              <p className="text-xs text-base-content/50 mb-1.5">{"\u5C42\u5207\u6362"}</p>
+              <p className="text-xs text-base-content/50 mb-1.5">{"层切换"}</p>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-1.5">
-                {layerBehaviors.map((b) => renderBehaviorBtn(b, LAYER_NAMES))}
+                {layerBehaviors.map((b) => {
+                  const zh = matchName(b.displayName, LAYER_NAMES);
+                  return (
+                    <button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={cardBtn(behaviorId === b.id)}>
+                      <span className="font-medium leading-tight">{zh}</span>
+                      {zh !== b.displayName && <span className={`text-[9px] mt-0.5 ${behaviorId === b.id ? "opacity-60" : "opacity-30"}`}>{b.displayName}</span>}
+                    </button>
+                  );
+                })}
               </div>
               {metadata && layerBehaviors.some((b) => b.id === behaviorId) && (
                 <div className="mt-2"><BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} /></div>
@@ -381,9 +361,17 @@ export const BehaviorBindingPicker = ({
             </div>
           )}
           <div>
-            <p className="text-xs text-base-content/50 mb-1.5">{"\u5176\u4ED6\u529F\u80FD"}</p>
+            <p className="text-xs text-base-content/50 mb-1.5">{"其他功能"}</p>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-1.5">
-              {otherBehaviors.map((b) => renderBehaviorBtn(b, OTHER_NAMES))}
+              {otherBehaviors.map((b) => {
+                const zh = matchName(b.displayName, OTHER_NAMES);
+                return (
+                  <button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={cardBtn(behaviorId === b.id)}>
+                    <span className="font-medium leading-tight">{zh}</span>
+                    {zh !== b.displayName && <span className={`text-[9px] mt-0.5 ${behaviorId === b.id ? "opacity-60" : "opacity-30"}`}>{b.displayName}</span>}
+                  </button>
+                );
+              })}
             </div>
             {metadata && otherBehaviors.some((b) => b.id === behaviorId) && (
               <div className="mt-2"><BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} /></div>
@@ -392,24 +380,71 @@ export const BehaviorBindingPicker = ({
         </div>
       )}
 
-      {/* 5. Lighting */}
+      {/* 5. Lighting - FLAT buttons, no sub-menu */}
       {activeCategory === "lighting" && (
-        <div className="flex flex-col gap-2">
-          <p className="text-xs text-base-content/50">RGB \u7075\u706F\u548C\u80CC\u5149\u63A7\u5236</p>
-          {lightBehaviors.length > 0 ? (
+        <div className="flex flex-col gap-3">
+          {underglowBehavior ? (
             <>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-1.5">
-                {lightBehaviors.map((b) => renderBehaviorBtn(b, LIGHT_NAMES))}
+              <p className="text-xs text-base-content/50">{"RGB 灯光控制"}</p>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-1.5">
+                {RGB_BUTTONS.map((btn) => {
+                  const isActive = behaviorId === underglowBehavior.id && param1 === btn.paramValue;
+                  return (
+                    <button key={btn.paramValue} onClick={() => handleLightButton(underglowBehavior, btn.paramValue)} className={cardBtn(isActive)}>
+                      <span className="font-medium">{btn.zh}</span>
+                      <span className={`text-[9px] mt-0.5 ${isActive ? "opacity-60" : "opacity-30"}`}>{btn.en}</span>
+                    </button>
+                  );
+                })}
               </div>
-              {metadata && lightBehaviors.some((b) => b.id === behaviorId) && (
-                <div>
-                  <p className="text-xs text-base-content/50 mb-1 mt-1">{"\u706F\u6548\u53C2\u6570"}</p>
-                  <BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} />
-                </div>
-              )}
             </>
           ) : (
-            <div className="text-sm text-base-content/40 text-center py-4">{"\u56FA\u4EF6\u4E2D\u672A\u542F\u7528\u706F\u5149\u529F\u80FD"}</div>
+            <div className="text-sm text-base-content/40 text-center py-4">{"固件中未启用 RGB 灯光功能"}</div>
+          )}
+
+          {backlightBehavior && (
+            <>
+              <p className="text-xs text-base-content/50 mt-1">{"背光控制"}</p>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-1.5">
+                {[
+                  { zh: "背光 开/关", en: "Toggle", pv: 0 },
+                  { zh: "背光 开", en: "On", pv: 1 },
+                  { zh: "背光 关", en: "Off", pv: 2 },
+                  { zh: "背光 亮度+", en: "Bri Up", pv: 3 },
+                  { zh: "背光 亮度-", en: "Bri Down", pv: 4 },
+                  { zh: "背光 循环", en: "Cycle", pv: 5 },
+                ].map((btn) => {
+                  const isActive = behaviorId === backlightBehavior.id && param1 === btn.pv;
+                  return (
+                    <button key={btn.pv} onClick={() => handleLightButton(backlightBehavior, btn.pv)} className={cardBtn(isActive)}>
+                      <span className="font-medium">{btn.zh}</span>
+                      <span className={`text-[9px] mt-0.5 ${isActive ? "opacity-60" : "opacity-30"}`}>{btn.en}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {extPowerBehavior && (
+            <>
+              <p className="text-xs text-base-content/50 mt-1">{"外部电源"}</p>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-1.5">
+                {[
+                  { zh: "电源 开/关", en: "Toggle", pv: 0 },
+                  { zh: "电源 开", en: "On", pv: 1 },
+                  { zh: "电源 关", en: "Off", pv: 2 },
+                ].map((btn) => {
+                  const isActive = behaviorId === extPowerBehavior.id && param1 === btn.pv;
+                  return (
+                    <button key={btn.pv} onClick={() => handleLightButton(extPowerBehavior, btn.pv)} className={cardBtn(isActive)}>
+                      <span className="font-medium">{btn.zh}</span>
+                      <span className={`text-[9px] mt-0.5 ${isActive ? "opacity-60" : "opacity-30"}`}>{btn.en}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       )}
@@ -417,14 +452,13 @@ export const BehaviorBindingPicker = ({
       {/* 6. Macro */}
       {activeCategory === "macro" && (
         <div className="flex flex-col gap-3">
-          <p className="text-xs text-base-content/50">{"\u5B8F\u53EF\u4EE5\u6309\u987A\u5E8F\u6267\u884C\u591A\u4E2A\u6309\u952E\u64CD\u4F5C\u3002\u9700\u5728\u56FA\u4EF6 .keymap \u4E2D\u9884\u5148\u5B9A\u4E49\u3002"}</p>
+          <p className="text-xs text-base-content/50">{"宏可以按顺序执行多个按键操作。需在固件 .keymap 中预先定义。"}</p>
           {macroBehaviors.length > 0 ? (
             <>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-1.5">
-                {macroBehaviors.map((b) => {
-                  const isActive = behaviorId === b.id;
-                  return <button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={behaviorBtnClass(isActive)}>{b.displayName}</button>;
-                })}
+                {macroBehaviors.map((b) => (
+                  <button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={cardBtn(behaviorId === b.id)}>{b.displayName}</button>
+                ))}
               </div>
               {metadata && macroBehaviors.some((b) => b.id === behaviorId) && (
                 <BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} />
@@ -432,16 +466,15 @@ export const BehaviorBindingPicker = ({
             </>
           ) : (
             <div className="bg-base-100 border border-base-300 rounded-lg p-4 text-center">
-              <p className="text-sm text-base-content/70 mb-2">{"\u5F53\u524D\u56FA\u4EF6\u4E2D\u6CA1\u6709\u5B9A\u4E49\u5B8F"}</p>
-              <p className="text-xs text-base-content/40 mb-3">{"\u5728 .keymap \u6587\u4EF6\u4E2D\u6DFB\u52A0\u5B8F\u5B9A\u4E49\u540E\u91CD\u65B0\u7F16\u8BD1\u56FA\u4EF6\u5373\u53EF\u4F7F\u7528"}</p>
+              <p className="text-sm text-base-content/70 mb-2">{"当前固件中没有定义宏"}</p>
+              <p className="text-xs text-base-content/40 mb-3">{"在 .keymap 文件中添加宏定义后重新编译固件即可使用"}</p>
               <div className="bg-base-200 rounded-md p-3 text-left text-[11px] font-mono text-base-content/60 leading-relaxed">
                 <div>{"/ {"}</div>
                 <div className="pl-4">{"macros {"}</div>
                 <div className="pl-8">{"copy_paste: copy_paste {"}</div>
                 <div className="pl-12">{'compatible = "zmk,behavior-macro";'}</div>
                 <div className="pl-12">{"#binding-cells = <0>;"}</div>
-                <div className="pl-12">{"wait-ms = <30>;"}</div>
-                <div className="pl-12">{"tap-ms = <40>;"}</div>
+                <div className="pl-12">{"wait-ms = <30>; tap-ms = <40>;"}</div>
                 <div className="pl-12">{"bindings = <&kp LC(C)>, <&kp LC(V)>;"}</div>
                 <div className="pl-8">{"};"}</div>
                 <div className="pl-4">{"};"}</div>
@@ -455,9 +488,9 @@ export const BehaviorBindingPicker = ({
       {/* 7. Advanced */}
       {activeCategory === "advanced" && (
         <div className="flex flex-col gap-3">
-          <p className="text-xs text-base-content/50">{"\u9AD8\u7EA7\u6A21\u5F0F\u652F\u6301\u6240\u6709 ZMK \u884C\u4E3A\uFF0C\u5305\u62EC Mod-Tap\u3001Hold-Tap\u3001\u5B8F\u7B49"}</p>
+          <p className="text-xs text-base-content/50">{"高级模式支持所有 ZMK 行为，包括 Mod-Tap、Hold-Tap、宏等"}</p>
           <div>
-            <label className="text-xs text-base-content/50 block mb-1">{"\u884C\u4E3A\u7C7B\u578B"}</label>
+            <label className="text-xs text-base-content/50 block mb-1">{"行为类型"}</label>
             <select value={behaviorId} className="h-9 rounded-lg w-full text-sm bg-base-100 border border-base-300 px-2"
               onChange={(e) => { setBehaviorId(parseInt(e.target.value)); setParam1(0); setParam2(0); }}>
               {sortedBehaviors.map((b) => (<option key={b.id} value={b.id}>{b.displayName}</option>))}
