@@ -12,7 +12,7 @@ import { useModalRef } from "./misc/useModalRef";
 import { LockStateContext } from "./rpc/LockStateContext";
 import { LockState } from "@zmkfirmware/zmk-studio-ts-client/core";
 import { ConnectionContext } from "./rpc/ConnectionContext";
-import { ChevronDown, Undo2, Redo2, Save, Trash2 } from "lucide-react";
+import { ChevronDown, Undo2, Redo2, Save, Trash2, Sun, Moon } from "lucide-react";
 import { Tooltip } from "./misc/Tooltip";
 import { GenericModal } from "./GenericModal";
 
@@ -43,6 +43,25 @@ export const AppHeader = ({
 
   const lockState = useContext(LockStateContext);
   const connectionState = useContext(ConnectionContext);
+
+  // ─── 明暗模式 ──────────────────────────────────────────
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem("arc-theme");
+    if (saved) return saved === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (darkMode) {
+      root.style.colorScheme = "dark";
+      root.classList.add("dark");
+    } else {
+      root.style.colorScheme = "light";
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("arc-theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   useEffect(() => {
     if (
@@ -169,6 +188,21 @@ export const AppHeader = ({
           >
             <Trash2 className="inline-block w-4" aria-label="撤销更改" />
           </Button>
+        </Tooltip>
+
+        {/* 明暗模式切换 */}
+        <div className="w-px h-6 bg-base-300 self-center mx-1" />
+        <Tooltip label={darkMode ? "切换到亮色模式" : "切换到暗色模式"}>
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="flex items-center justify-center p-2 rounded-lg hover:bg-base-300 transition-colors"
+          >
+            {darkMode ? (
+              <Sun className="w-4 h-4 text-amber-400" aria-label="亮色模式" />
+            ) : (
+              <Moon className="w-4 h-4 text-base-content/70" aria-label="暗色模式" />
+            )}
+          </button>
         </Tooltip>
       </div>
     </header>
