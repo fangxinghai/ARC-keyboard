@@ -286,7 +286,6 @@ export const BehaviorBindingPicker = ({
     return !skip;
   }), [behaviors]);
 
-  const macroBehaviors = useMemo(() => behaviors.filter((b) => b.displayName.toLowerCase().includes("macro")), [behaviors]);
 
   useEffect(() => {
     if (binding.behaviorId === behaviorId && binding.param1 === param1 && binding.param2 === param2) return;
