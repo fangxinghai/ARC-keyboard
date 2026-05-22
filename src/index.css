@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ══════════════════════════════════════════════════════════
+   ARC Keyboard — Apple-Style Global Styles
+   ══════════════════════════════════════════════════════════ */
+
 @layer base {
   @font-face {
     font-family: "Inter";
@@ -10,9 +14,14 @@
   }
 }
 
+/* ── 基础 ─────────────────────────────────────────────── */
 html {
   color-scheme: light dark;
   font-size: 16px;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 #root {
@@ -25,12 +34,267 @@ body {
   min-width: 320px;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── 响应式字号 ──────────────────────────────────────── */
 @media (min-width: 2560px) {
   html { font-size: 20px; }
 }
-
 @media (min-width: 3840px) {
   html { font-size: 24px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   流动渐变背景 — The Core Visual Magic
+   ══════════════════════════════════════════════════════════ */
+
+/* 背景容器 */
+.arc-bg-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 亮色模式渐变色团 */
+.arc-bg-gradient .blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  will-change: transform;
+}
+
+/* 亮色色团 - 柔和淡雅 */
+.blob-1 {
+  width: 50vw;
+  height: 50vw;
+  max-width: 600px;
+  max-height: 600px;
+  background: radial-gradient(circle, rgba(0, 122, 255, 0.25) 0%, transparent 70%);
+  top: -10%;
+  left: -10%;
+  animation: blob-move-1 25s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 45vw;
+  height: 45vw;
+  max-width: 550px;
+  max-height: 550px;
+  background: radial-gradient(circle, rgba(88, 86, 214, 0.2) 0%, transparent 70%);
+  top: 20%;
+  right: -15%;
+  animation: blob-move-2 30s ease-in-out infinite;
+}
+
+.blob-3 {
+  width: 40vw;
+  height: 40vw;
+  max-width: 500px;
+  max-height: 500px;
+  background: radial-gradient(circle, rgba(52, 199, 89, 0.15) 0%, transparent 70%);
+  bottom: -10%;
+  left: 20%;
+  animation: blob-move-3 35s ease-in-out infinite;
+}
+
+.blob-4 {
+  width: 35vw;
+  height: 35vw;
+  max-width: 450px;
+  max-height: 450px;
+  background: radial-gradient(circle, rgba(255, 149, 0, 0.15) 0%, transparent 70%);
+  bottom: 10%;
+  right: 10%;
+  animation: blob-move-4 28s ease-in-out infinite;
+}
+
+/* 暗色模式色团 — 更深邃更浓 */
+html.dark .blob-1 {
+  background: radial-gradient(circle, rgba(10, 132, 255, 0.3) 0%, transparent 70%);
+  opacity: 0.6;
+}
+
+html.dark .blob-2 {
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.25) 0%, transparent 70%);
+  opacity: 0.6;
+}
+
+html.dark .blob-3 {
+  background: radial-gradient(circle, rgba(48, 209, 88, 0.15) 0%, transparent 70%);
+  opacity: 0.5;
+}
+
+html.dark .blob-4 {
+  background: radial-gradient(circle, rgba(255, 159, 10, 0.2) 0%, transparent 70%);
+  opacity: 0.5;
+}
+
+/* ══════════════════════════════════════════════════════════
+   毛玻璃组件样式
+   ══════════════════════════════════════════════════════════ */
+
+.glass {
+  background: light-dark(rgba(255, 255, 255, 0.72), rgba(28, 28, 30, 0.72));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.08));
+}
+
+.glass-heavy {
+  background: light-dark(rgba(255, 255, 255, 0.88), rgba(28, 28, 30, 0.88));
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
+}
+
+.glass-light {
+  background: light-dark(rgba(255, 255, 255, 0.5), rgba(28, 28, 30, 0.5));
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.06));
+}
+
+/* ══════════════════════════════════════════════════════════
+   Apple 风过渡动画
+   ══════════════════════════════════════════════════════════ */
+
+/* 全局颜色过渡（主题切换时） */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-duration: 0.3s;
+}
+
+/* Tab 滑动指示条 */
+.tab-indicator {
+  transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 按键按下反馈 */
+.key-press-feedback {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease;
+}
+
+.key-press-feedback:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.key-press-feedback:active {
+  transform: translateY(0px) scale(0.98);
+  transition-duration: 0.08s;
+}
+
+/* 面板进入动画 */
+.panel-enter {
+  animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Modal 弹窗动画 */
+.modal-overlay {
+  animation: fade-in 0.2s ease-out both;
+}
+
+.modal-content {
+  animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── 按钮通用样式 ───────────────────────────────────────── */
+.btn-apple {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-apple:hover {
+  transform: scale(1.02);
+}
+
+.btn-apple:active {
+  transform: scale(0.97);
+  transition-duration: 0.08s;
+}
+
+/* ── 滚动条 ─────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: light-dark(rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0.15));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: light-dark(rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.25));
+}
+
+/* ══════════════════════════════════════════════════════════
+   keyframe 动画定义（供 blob + 组件复用）
+   ══════════════════════════════════════════════════════════ */
+
+@keyframes blob-move-1 {
+  0%, 100% { transform: translate(0%, 0%) scale(1); }
+  25% { transform: translate(30%, -20%) scale(1.1); }
+  50% { transform: translate(-10%, 30%) scale(0.9); }
+  75% { transform: translate(-30%, -10%) scale(1.05); }
+}
+
+@keyframes blob-move-2 {
+  0%, 100% { transform: translate(0%, 0%) scale(1); }
+  33% { transform: translate(-25%, 25%) scale(1.15); }
+  66% { transform: translate(20%, -15%) scale(0.85); }
+}
+
+@keyframes blob-move-3 {
+  0%, 100% { transform: translate(0%, 0%) scale(1.05); }
+  20% { transform: translate(15%, 20%) scale(0.95); }
+  40% { transform: translate(-20%, 10%) scale(1.1); }
+  60% { transform: translate(10%, -25%) scale(0.9); }
+  80% { transform: translate(-15%, -10%) scale(1); }
+}
+
+@keyframes blob-move-4 {
+  0%, 100% { transform: translate(0%, 0%) scale(0.95); }
+  25% { transform: translate(-20%, -20%) scale(1.1); }
+  50% { transform: translate(25%, 15%) scale(1); }
+  75% { transform: translate(10%, -20%) scale(1.05); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
