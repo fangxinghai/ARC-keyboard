@@ -29,9 +29,6 @@ import { valueAfter } from "./misc/async";
 import { AppFooter } from "./AppFooter";
 import { AboutModal } from "./AboutModal";
 import { LicenseNoticeModal } from "./misc/LicenseNoticeModal";
-import { connectMacroSerial } from "./macro/macro-transport";
-import type { MacroTransportHandle } from "./macro/macro-transport";
-import { MacroContext } from "./macro/MacroContext";
 
 declare global {
   interface Window {
@@ -144,6 +141,7 @@ async function connect(
   ]);
 
   if (!details) {
+    // TODO: Show a proper toast/alert not using `window.alert`
     window.alert("连接设备失败，请检查连接后重试");
     return;
   }
@@ -171,7 +169,6 @@ function App() {
   const [showAbout, setShowAbout] = useState(false);
   const [showLicenseNotice, setShowLicenseNotice] = useState(false);
   const [connectionAbort, setConnectionAbort] = useState(new AbortController());
-  const [macroTransport, setMacroTransport] = useState<MacroTransportHandle | null>(null);
 
   const [lockState, setLockState] = useState<LockState>(
     LockState.ZMK_STUDIO_CORE_LOCK_STATE_LOCKED
@@ -266,18 +263,13 @@ function App() {
         return;
       }
 
-      if (macroTransport) {
-        macroTransport.disconnect();
-        setMacroTransport(null);
-      }
-
       await conn.conn.request_writable.close();
       connectionAbort.abort("User disconnected");
       setConnectionAbort(new AbortController());
     }
 
     doDisconnect();
-  }, [conn, macroTransport]);
+  }, [conn]);
 
   const onConnect = useCallback(
     (t: RpcTransport) => {
@@ -285,50 +277,42 @@ function App() {
       setConnectionAbort(ac);
       connect(t, setConn, setConnectedDeviceName, ac.signal);
     },
-    [setConn, setConnectedDeviceName]
+    [setConn, setConnectedDeviceName, setConnectedDeviceName]
   );
-
-  const handleConnectMacro = useCallback(function (): Promise<void> {
-    return connectMacroSerial().then(function (mt) {
-      setMacroTransport(mt);
-    });
-  }, []);
 
   return (
     <ConnectionContext.Provider value={conn}>
       <LockStateContext.Provider value={lockState}>
         <UndoRedoContext.Provider value={doIt}>
-          <MacroContext.Provider value={{ transport: macroTransport, connectMacro: handleConnectMacro }}>
-            <UnlockModal />
-            <ConnectModal
-              open={!conn.conn}
-              transports={TRANSPORTS}
-              onTransportCreated={onConnect}
+          <UnlockModal />
+          <ConnectModal
+            open={!conn.conn}
+            transports={TRANSPORTS}
+            onTransportCreated={onConnect}
+          />
+          <AboutModal open={showAbout} onClose={() => setShowAbout(false)} />
+          <LicenseNoticeModal
+            open={showLicenseNotice}
+            onClose={() => setShowLicenseNotice(false)}
+          />
+          <div className="bg-base-100 text-base-content h-full max-h-[100vh] w-full max-w-[100vw] inline-grid grid-cols-[auto] grid-rows-[auto_1fr_auto] overflow-hidden">
+            <AppHeader
+              connectedDeviceLabel={connectedDeviceName}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onUndo={undo}
+              onRedo={redo}
+              onSave={save}
+              onDiscard={discard}
+              onDisconnect={disconnect}
+              onResetSettings={resetSettings}
             />
-            <AboutModal open={showAbout} onClose={() => setShowAbout(false)} />
-            <LicenseNoticeModal
-              open={showLicenseNotice}
-              onClose={() => setShowLicenseNotice(false)}
+            <Keyboard />
+            <AppFooter
+              onShowAbout={() => setShowAbout(true)}
+              onShowLicenseNotice={() => setShowLicenseNotice(true)}
             />
-            <div className="bg-base-100 text-base-content h-full max-h-[100vh] w-full max-w-[100vw] inline-grid grid-cols-[auto] grid-rows-[auto_1fr_auto] overflow-hidden">
-              <AppHeader
-                connectedDeviceLabel={connectedDeviceName}
-                canUndo={canUndo}
-                canRedo={canRedo}
-                onUndo={undo}
-                onRedo={redo}
-                onSave={save}
-                onDiscard={discard}
-                onDisconnect={disconnect}
-                onResetSettings={resetSettings}
-              />
-              <Keyboard />
-              <AppFooter
-                onShowAbout={() => setShowAbout(true)}
-                onShowLicenseNotice={() => setShowLicenseNotice(true)}
-              />
-            </div>
-          </MacroContext.Provider>
+          </div>
         </UndoRedoContext.Provider>
       </LockStateContext.Provider>
     </ConnectionContext.Provider>
