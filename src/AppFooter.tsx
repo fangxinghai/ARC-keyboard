@@ -13,12 +13,9 @@ export const AppFooter = ({
     <footer className="glass-light flex items-center justify-between px-5 py-2 text-xs text-base-content/30 rounded-t-2xl">
       <span>
         ARC 改键器 · 基于{" "}
-        <ExternalLink
-          href="https://zmk.dev"
-          className="hover:text-base-content/60 transition-colors duration-200 underline underline-offset-2"
-        >
-          ZMK
-        </ExternalLink>{" "}
+        <span className="hover:text-base-content/60 transition-colors duration-200 underline underline-offset-2">
+          <ExternalLink href="https://zmk.dev">ZMK</ExternalLink>
+        </span>{" "}
         固件
       </span>
       <div className="flex gap-4">
