@@ -70,12 +70,15 @@ const EditLabelModal = ({
       onClose={onClose}
       className="min-w-min w-[30vw] flex flex-col"
     >
-      <span className="mb-3 text-lg">New Layer Name</span>
+      <span className="mb-3 text-base font-semibold text-base-content">
+        重命名层
+      </span>
       <input
-        className="p-1 border rounded border-base-content border-solid"
+        className="p-2.5 rounded-xl glass text-sm outline-none focus:ring-2 focus:ring-primary/30 transition-all duration-200 text-base-content"
         type="text"
         defaultValue={editLabelData.name}
         autoFocus
+        placeholder="输入新名称..."
         onChange={(e) => setNewLabelName(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
@@ -84,18 +87,22 @@ const EditLabelModal = ({
           }
         }}
       />
-      <div className="mt-4 flex justify-end">
-        <button className="py-1.5 px-2" type="button" onClick={onClose}>
-          Cancel
+      <div className="mt-4 flex justify-end gap-2">
+        <button
+          className="btn-apple py-2 px-4 rounded-xl text-sm text-base-content/60 hover:bg-base-content/5"
+          type="button"
+          onClick={onClose}
+        >
+          取消
         </button>
         <button
-          className="py-1.5 px-2 ml-4 rounded-md bg-gray-100 text-black hover:bg-gray-300"
+          className="btn-apple py-2 px-4 rounded-xl text-sm bg-primary text-primary-content font-medium"
           type="button"
           onClick={() => {
             handleSave();
           }}
         >
-          Save
+          保存
         </button>
       </div>
     </GenericModal>
@@ -143,7 +150,7 @@ export const LayerPicker = ({
       return (
         <DropIndicator
           target={target}
-          className={"data-[drop-target]:outline outline-1 outline-accent"}
+          className={"data-[drop-target]:outline outline-1 outline-primary"}
         />
       );
     },
@@ -167,29 +174,32 @@ export const LayerPicker = ({
 
   return (
     <div className="flex flex-col min-w-40">
-      <div className="grid grid-cols-[1fr_auto_auto] items-center">
-        <Label className="after:content-[':'] text-sm">Layers</Label>
+      <div className="grid grid-cols-[1fr_auto_auto] items-center mb-1">
+        <Label className="text-xs font-semibold text-base-content/40 uppercase tracking-wider">
+          Layers
+        </Label>
         {onRemoveClicked && (
           <button
             type="button"
-            className="hover:text-primary-content hover:bg-primary rounded-sm"
+            className="p-1 rounded-lg hover:bg-error/15 hover:text-error disabled:opacity-25 transition-all duration-200 active:scale-90"
             disabled={!canRemove}
             onClick={onRemoveClicked}
           >
-            <Minus className="size-4" />
+            <Minus className="size-3.5" />
           </button>
         )}
         {onAddClicked && (
           <button
             type="button"
             disabled={!canAdd}
-            className="hover:text-primary-content ml-1 hover:bg-primary rounded-sm disabled:text-gray-500 disabled:hover:bg-base-300 disabled:cursor-not-allowed"
+            className="p-1 ml-0.5 rounded-lg hover:bg-primary/15 hover:text-primary disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-200 active:scale-90"
             onClick={onAddClicked}
           >
-            <Plus className="size-4" />
+            <Plus className="size-3.5" />
           </button>
         )}
       </div>
+
       {editLabelData !== null && (
         <EditLabelModal
           open={editLabelData !== null}
@@ -198,6 +208,7 @@ export const LayerPicker = ({
           handleSaveNewLabel={handleSaveNewLabel}
         />
       )}
+
       <ListBox
         aria-label="Keymap Layer"
         selectionMode="single"
@@ -208,7 +219,7 @@ export const LayerPicker = ({
             ? [layer_items[selectedLayerIndex].id]
             : []
         }
-        className="ml-2 items-center justify-center cursor-pointer"
+        className="flex flex-col gap-1 cursor-pointer"
         onSelectionChange={selectionChanged}
         dragAndDropHooks={dragAndDropHooks}
         {...props}
@@ -216,11 +227,19 @@ export const LayerPicker = ({
         {(layer_item) => (
           <ListBoxItem
             textValue={layer_item.name}
-            className="p-1 b-1 my-1 group grid grid-cols-[1fr_auto] items-center aria-selected:bg-primary aria-selected:text-primary-content border rounded border-transparent border-solid hover:bg-base-300"
+            className="
+              p-2 group grid grid-cols-[1fr_auto] items-center
+              rounded-xl text-sm font-medium
+              transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
+              outline-none
+              aria-selected:bg-primary aria-selected:text-primary-content aria-selected:shadow-glow-primary
+              hover:bg-base-content/5
+              active:scale-95
+            "
           >
             <span>{layer_item.name}</span>
             <Pencil
-              className="h-4 w-4 mx-1 invisible group-hover:visible"
+              className="h-3.5 w-3.5 mx-1 opacity-0 group-hover:opacity-40 hover:!opacity-80 transition-opacity duration-200 cursor-pointer"
               onClick={() =>
                 setEditLabelData({ id: layer_item.id, name: layer_item.name })
               }
