@@ -10,20 +10,27 @@ export const AppFooter = ({
   onShowLicenseNotice,
 }: AppFooterProps) => {
   return (
-    <footer className="flex items-center justify-between px-4 py-1.5 text-xs opacity-50 border-t border-base-300">
+    <footer className="glass-light flex items-center justify-between px-5 py-2 text-xs text-base-content/30 rounded-t-2xl">
       <span>
         ARC 改键器 · 基于{" "}
-        <ExternalLink href="https://zmk.dev">ZMK</ExternalLink> 固件
+        <ExternalLink
+          href="https://zmk.dev"
+          className="hover:text-base-content/60 transition-colors duration-200 underline underline-offset-2"
+        >
+          ZMK
+        </ExternalLink>{" "}
+        固件
       </span>
-      <div className="flex gap-3">
+      <div className="flex gap-4">
         <button
-          className="hover:opacity-100 opacity-60 transition-opacity"
+          className="hover:text-base-content/60 transition-all duration-200 active:scale-95"
           onClick={onShowAbout}
         >
           关于
         </button>
+        <div className="w-px h-3 bg-base-content/10 self-center" />
         <button
-          className="hover:opacity-100 opacity-60 transition-opacity"
+          className="hover:text-base-content/60 transition-all duration-200 active:scale-95"
           onClick={onShowLicenseNotice}
         >
           许可证
