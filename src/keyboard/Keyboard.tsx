@@ -1,4 +1,4 @@
-﻿import React, {
+import React, {
   SetStateAction,
   useCallback,
   useContext,
@@ -174,9 +174,13 @@ export default function Keyboard() {
     true
   );
 
-  const [keymapScale, setKeymapScale] = useLocalStorageState<LayoutZoom>("keymapScale", "auto", {
-    deserialize: deserializeLayoutZoom,
-  });
+  const [keymapScale, setKeymapScale] = useLocalStorageState<LayoutZoom>(
+    "keymapScale",
+    "auto",
+    {
+      deserialize: deserializeLayoutZoom,
+    }
+  );
 
   const [selectedLayerIndex, setSelectedLayerIndex] = useState<number>(0);
   const [selectedKeyPosition, setSelectedKeyPosition] = useState<
@@ -221,7 +225,6 @@ export default function Keyboard() {
       let oldLayout = selectedPhysicalLayoutIndex;
       undoRedo?.(async () => {
         setSelectedPhysicalLayoutIndex(i);
-
         return async () => {
           setSelectedPhysicalLayoutIndex(oldLayout);
         };
@@ -284,7 +287,6 @@ export default function Keyboard() {
                 draft.layers[layer].bindings[keyPosition] = oldBinding;
               })
             );
-          } else {
           }
         };
       });
@@ -293,7 +295,11 @@ export default function Keyboard() {
   );
 
   let selectedBinding = useMemo(() => {
-    if (keymap == null || selectedKeyPosition == null || !keymap.layers[selectedLayerIndex]) {
+    if (
+      keymap == null ||
+      selectedKeyPosition == null ||
+      !keymap.layers[selectedLayerIndex]
+    ) {
       return null;
     }
 
@@ -345,7 +351,6 @@ export default function Keyboard() {
         );
 
         setSelectedLayerIndex(newSelection);
-
         return resp.keymap.addLayer.ok.index;
       } else {
         console.error("Add error", resp.keymap?.addLayer?.err);
@@ -362,7 +367,6 @@ export default function Keyboard() {
         keymap: { removeLayer: { layerIndex } },
       });
 
-      console.log(resp);
       if (resp.keymap?.removeLayer?.ok) {
         setKeymap(
           produce((draft: any) => {
@@ -421,7 +425,6 @@ export default function Keyboard() {
         keymap: { restoreLayer: { layerId, atIndex } },
       });
 
-      console.log(resp);
       if (resp.keymap?.restoreLayer?.ok) {
         setKeymap(
           produce((draft: any) => {
@@ -501,10 +504,11 @@ export default function Keyboard() {
   }, [keymap, selectedLayerIndex]);
 
   return (
-    <div className="grid grid-cols-[auto_1fr] grid-rows-[1fr_minmax(10em,auto)] bg-base-300 max-w-full min-w-0 min-h-0">
-      <div className="p-2 flex flex-col gap-2 bg-base-200 row-span-2">
+    <div className="grid grid-cols-[auto_1fr] grid-rows-[1fr_minmax(10em,auto)] max-w-full min-w-0 min-h-0">
+      {/* ═══ 左侧面板：层选择 + 布局选择 ═══ */}
+      <div className="p-3 flex flex-col gap-3 glass-light row-span-2 rounded-r-2xl m-1 ml-0">
         {layouts && (
-          <div className="col-start-3 row-start-1 row-end-2">
+          <div>
             <PhysicalLayoutPicker
               layouts={layouts}
               selectedPhysicalLayoutIndex={selectedPhysicalLayoutIndex}
@@ -514,7 +518,7 @@ export default function Keyboard() {
         )}
 
         {keymap && (
-          <div className="col-start-1 row-start-1 row-end-2">
+          <div>
             <LayerPicker
               layers={keymap.layers}
               selectedLayerIndex={selectedLayerIndex}
@@ -529,8 +533,10 @@ export default function Keyboard() {
           </div>
         )}
       </div>
+
+      {/* ═══ 中间：键盘布局可视化 ═══ */}
       {layouts && keymap && behaviors && (
-        <div className="p-2 col-start-2 row-start-1 grid items-center justify-center relative min-w-0">
+        <div className="p-3 col-start-2 row-start-1 grid items-center justify-center relative min-w-0">
           <KeymapComp
             keymap={keymap}
             layout={layouts[selectedPhysicalLayoutIndex]}
@@ -540,8 +546,10 @@ export default function Keyboard() {
             selectedKeyPosition={selectedKeyPosition}
             onKeyPositionClicked={setSelectedKeyPosition}
           />
+
+          {/* 缩放选择器 */}
           <select
-            className="absolute top-2 right-2 h-8 rounded px-2"
+            className="absolute top-3 right-3 h-8 rounded-xl px-3 text-xs glass border-0 outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all duration-200 appearance-none font-medium text-base-content/50"
             value={keymapScale}
             onChange={(e) => {
               const value = deserializeLayoutZoom(e.target.value);
@@ -559,8 +567,10 @@ export default function Keyboard() {
           </select>
         </div>
       )}
+
+      {/* ═══ 底部：改键面板 ═══ */}
       {keymap && selectedBinding && (
-        <div className="p-2 col-start-2 row-start-2 bg-base-200">
+        <div className="p-3 col-start-2 row-start-2 glass-light rounded-t-2xl m-1 mb-0 panel-enter">
           <BehaviorBindingPicker
             binding={selectedBinding}
             behaviors={Object.values(behaviors)}
