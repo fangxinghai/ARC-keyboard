@@ -141,7 +141,6 @@ async function connect(
   ]);
 
   if (!details) {
-    // TODO: Show a proper toast/alert not using `window.alert`
     window.alert("连接设备失败，请检查连接后重试");
     return;
   }
@@ -295,7 +294,17 @@ function App() {
             open={showLicenseNotice}
             onClose={() => setShowLicenseNotice(false)}
           />
-          <div className="bg-base-100 text-base-content h-full max-h-[100vh] w-full max-w-[100vw] inline-grid grid-cols-[auto] grid-rows-[auto_1fr_auto] overflow-hidden">
+
+          {/* ═══ 流动渐变背景层 ═══ */}
+          <div className="arc-bg-gradient">
+            <div className="blob blob-1" />
+            <div className="blob blob-2" />
+            <div className="blob blob-3" />
+            <div className="blob blob-4" />
+          </div>
+
+          {/* ═══ 主内容层 ═══ */}
+          <div className="relative z-10 text-base-content h-full max-h-[100vh] w-full max-w-[100vw] inline-grid grid-cols-[auto] grid-rows-[auto_1fr_auto] overflow-hidden">
             <AppHeader
               connectedDeviceLabel={connectedDeviceName}
               canUndo={canUndo}
