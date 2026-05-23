@@ -1,85 +1,50 @@
-import { BehaviorParameterValueDescription } from "@zmkfirmware/zmk-studio-ts-client/behaviors";
-import { HidUsagePicker } from "./HidUsagePicker";
+import { BehaviorBindingParametersSet } from "@zmkfirmware/zmk-studio-ts-client/behaviors";
+import { ParameterValuePicker } from "./ParameterValuePicker";
+import { validateValue } from "./parameters";
 
-export interface ParameterValuePickerProps {
-  value?: number;
-  values: BehaviorParameterValueDescription[];
+export interface BehaviorParametersPickerProps {
+  param1?: number;
+  param2?: number;
+  metadata: BehaviorBindingParametersSet[];
   layers: { id: number; name: string }[];
-  onValueChanged: (value?: number) => void;
+  onParam1Changed: (value?: number) => void;
+  onParam2Changed: (value?: number) => void;
 }
 
-export const ParameterValuePicker = ({
-  value,
-  values,
-  layers,
-  onValueChanged,
-}: ParameterValuePickerProps) => {
-  if (values.length == 0) {
-    return <></>;
-  } else if (values.every((v) => v.constant !== undefined)) {
+export const BehaviorParametersPicker = ({
+  param1, param2, metadata, layers, onParam1Changed, onParam2Changed,
+}: BehaviorParametersPickerProps) => {
+  if (param1 === undefined) {
     return (
-      <div>
-        <select
-          value={value}
-          className="h-8 rounded"
-          onChange={(e) => onValueChanged(parseInt(e.target.value))}
-        >
-          {values.map((v) => (
-            <option value={v.constant}>{v.name}</option>
-          ))}
-        </select>
+      <div className="flex flex-col gap-2 items-center">
+        <ParameterValuePicker
+          values={metadata.flatMap((m) => m.param1)}
+          onValueChanged={onParam1Changed}
+          layers={layers}
+        />
       </div>
     );
-  } else if (values.length == 1) {
-    if (values[0].range) {
-      return (
-        <div>
-          <label>{values[0].name}: </label>
-          <input
-            type="number"
-            min={values[0].range.min}
-            max={values[0].range.max}
-            value={value}
-            onChange={(e) => onValueChanged(parseInt(e.target.value))}
-          />
-        </div>
-      );
-    } else if (values[0].hidUsage) {
-      return (
-        <HidUsagePicker
-          onValueChanged={onValueChanged}
-          label={values[0].name}
-          value={value}
-          usagePages={[
-            { id: 7, min: 4, max: values[0].hidUsage.keyboardMax },
-            { id: 12, max: values[0].hidUsage.consumerMax },
-          ]}
-        />
-      );
-    } else if (values[0].layerId) {
-      return (
-        <div>
-          <label>{values[0].name}: </label>
-          <select
-            value={value}
-            className="h-8 rounded"
-            onChange={(e) => onValueChanged(parseInt(e.target.value))}
-          >
-            {layers.map(({ name, id }) => (
-              <option value={id}>{name}</option>
-            ))}
-          </select>
-        </div>
-      );
-    }
   } else {
-    console.log("Not sure how to handle", values);
+    const set = metadata.find((s) =>
+      validateValue(layers.map((l) => l.id), param1, s.param1)
+    );
     return (
-      <>
-        <p>Some composite?</p>
-      </>
+      <div className="flex flex-col gap-3 items-center">
+        <ParameterValuePicker
+          values={metadata.flatMap((m) => m.param1)}
+          value={param1}
+          layers={layers}
+          onValueChanged={onParam1Changed}
+        />
+        {(set?.param2?.length || 0) > 0 && (
+          <ParameterValuePicker
+            values={set!.param2}
+            value={param2}
+            layers={layers}
+            onValueChanged={onParam2Changed}
+          />
+        )}
+      </div>
     );
   }
-
-  return <></>;
 };
