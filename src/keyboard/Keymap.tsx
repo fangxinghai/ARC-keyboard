@@ -7,43 +7,37 @@ import { HidUsageLabel } from "./HidUsageLabel";
 
 type BehaviorMap = Record<number, GetBehaviorDetailsResponse>;
 
-// ─── Behavior 参数的中文描述 ───
-
-
-// 通用参数名翻译
 function getParamLabel(behaviorName: string, param1: number, behavior?: GetBehaviorDetailsResponse): string {
   const n = behaviorName.toLowerCase();
 
-  // 蓝牙
   if (n.includes("bluetooth") || n === "bt") {
     const meta = behavior?.metadata;
     if (meta) {
       for (const set of meta) {
         const match = set.param1.find((p) => p.constant === param1);
         if (match) {
-          // 翻译常见蓝牙操作名
           const zh: Record<string, string> = {
-            "Next Profile": "下一配置",
-            "Previous Profile": "上一配置",
-            "Select Profile": "选择配置",
-            "Clear All Profiles": "清除所有",
-            "Clear Selected Profile": "清除当前",
-            "Disconnect Profile": "断开连接",
+            "Next Profile": "下一配置", "Previous Profile": "上一配置",
+            "Select Profile": "选择配置", "Clear All Profiles": "清除全部",
+            "Clear Selected Profile": "清除当前", "Disconnect Profile": "断开连接",
           };
           return zh[match.name] || match.name;
         }
+        // param2 是配置编号
+        if (set.param2) {
+          const p2match = set.param1.find((p) => p.constant === param1);
+          if (p2match) return p2match.name;
+        }
       }
     }
-    return `配置 ${param1}`;
+    return `配置${param1}`;
   }
 
-  // 输出选择
   if (n.includes("output")) {
     const map: Record<number, string> = { 0: "切换", 1: "USB", 2: "蓝牙" };
     return map[param1] || `${param1}`;
   }
 
-  // RGB
   if (n.includes("rgb") || n.includes("underglow")) {
     const map: Record<number, string> = {
       0: "开/关", 1: "开", 2: "关", 3: "色相+", 4: "色相-",
@@ -53,16 +47,18 @@ function getParamLabel(behaviorName: string, param1: number, behavior?: GetBehav
     return map[param1] || `${param1}`;
   }
 
-  // 背光
   if (n.includes("backlight")) {
     const map: Record<number, string> = { 0: "开/关", 1: "开", 2: "关", 3: "亮度+", 4: "亮度-", 5: "循环" };
     return map[param1] || `${param1}`;
   }
 
-  // 外部电源
   if (n.includes("ext") && n.includes("power")) {
     const map: Record<number, string> = { 0: "开/关", 1: "开", 2: "关" };
     return map[param1] || `${param1}`;
+  }
+
+  if (n.includes("layer") || n.includes("momentary")) {
+    return `层${param1}`;
   }
 
   return "";
@@ -98,11 +94,7 @@ export const Keymap = ({
     const binding = keymap.layers[selectedLayerIndex].bindings[i];
     const behavior = behaviors[binding.behaviorId];
     const behaviorName = behavior?.displayName || "Unknown";
-
-    // 判断是否是 Key Press（有 HID usage 参数）
     const isKeyPress = behaviorName.toLowerCase().includes("key") && behaviorName.toLowerCase().includes("press");
-
-    // 获取参数标签
     const paramLabel = !isKeyPress ? getParamLabel(behaviorName, binding.param1, behavior) : "";
 
     return {
@@ -116,7 +108,7 @@ export const Keymap = ({
       children: isKeyPress ? (
         <HidUsageLabel hid_usage={binding.param1} />
       ) : (
-        <span className="text-[10px] leading-tight text-center">{paramLabel}</span>
+        <span>{paramLabel}</span>
       ),
     };
   });
