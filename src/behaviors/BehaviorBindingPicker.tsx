@@ -408,39 +408,82 @@ export const BehaviorBindingPicker = ({
           </div>
         )}
 
-        {activeCategory === "lighting" && (
+               {activeCategory === "lighting" && (
           <div className="flex flex-col gap-4 panel-fade-enter">
             {underglowBehavior ? (
-              <><p className="text-xs text-base-content/40 font-medium">RGB 灯效控制</p>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(105px,1fr))] gap-2">
-                {RGB_BUTTONS.map((btn) => { const a = behaviorId === underglowBehavior.id && param1 === btn.paramValue; return (
-                  <button key={btn.paramValue} onClick={() => handleDirectBind(underglowBehavior, btn.paramValue)} className={cardBtn(a)}>
-                    <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${a ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
-                  </button>); })}
-              </div></>
+              <>
+                <p className="text-xs text-base-content/40 font-medium">RGB 灯效控制</p>
+                {behaviorId !== underglowBehavior.id && (
+                  <div className="flex justify-center">
+                    <button onClick={() => { setBehaviorId(underglowBehavior.id); setParam1(0); setParam2(0); }}
+                      className="btn-apple px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium">
+                      设为 RGB 灯效
+                    </button>
+                  </div>
+                )}
+                {behaviorId === underglowBehavior.id && underglowBehavior.metadata && (
+                  <BehaviorParametersPicker
+                    metadata={underglowBehavior.metadata}
+                    param1={param1}
+                    param2={param2}
+                    layers={layers}
+                    onParam1Changed={setParam1}
+                    onParam2Changed={setParam2}
+                  />
+                )}
+              </>
             ) : (<div className="glass rounded-2xl p-5 text-center text-sm text-base-content/40">固件中未启用 RGB</div>)}
+
             {backlightBehavior && (
-              <><p className="text-xs text-base-content/40 mt-1 font-medium">背光控制</p>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(105px,1fr))] gap-2">
-                {[{zh:"背光 开/关",en:"Toggle",pv:0},{zh:"背光 开",en:"On",pv:1},{zh:"背光 关",en:"Off",pv:2},{zh:"亮度+",en:"Bri Up",pv:3},{zh:"亮度-",en:"Bri Down",pv:4},{zh:"循环",en:"Cycle",pv:5}].map((btn) => {
-                  const a = behaviorId === backlightBehavior.id && param1 === btn.pv; return (
-                  <button key={btn.pv} onClick={() => handleDirectBind(backlightBehavior, btn.pv)} className={cardBtn(a)}>
-                    <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${a ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
-                  </button>); })}
-              </div></>
+              <>
+                <p className="text-xs text-base-content/40 mt-1 font-medium">背光控制</p>
+                {behaviorId !== backlightBehavior.id && (
+                  <div className="flex justify-center">
+                    <button onClick={() => { setBehaviorId(backlightBehavior.id); setParam1(0); setParam2(0); }}
+                      className="btn-apple px-4 py-2 rounded-xl bg-base-content/10 text-base-content/70 text-sm font-medium">
+                      设为背光控制
+                    </button>
+                  </div>
+                )}
+                {behaviorId === backlightBehavior.id && backlightBehavior.metadata && (
+                  <BehaviorParametersPicker
+                    metadata={backlightBehavior.metadata}
+                    param1={param1}
+                    param2={param2}
+                    layers={layers}
+                    onParam1Changed={setParam1}
+                    onParam2Changed={setParam2}
+                  />
+                )}
+              </>
             )}
+
             {extPowerBehavior && (
-              <><p className="text-xs text-base-content/40 mt-1 font-medium">外部电源</p>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(105px,1fr))] gap-2">
-                {[{zh:"电源 开/关",en:"Toggle",pv:0},{zh:"电源 开",en:"On",pv:1},{zh:"电源 关",en:"Off",pv:2}].map((btn) => {
-                  const a = behaviorId === extPowerBehavior.id && param1 === btn.pv; return (
-                  <button key={btn.pv} onClick={() => handleDirectBind(extPowerBehavior, btn.pv)} className={cardBtn(a)}>
-                    <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${a ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
-                  </button>); })}
-              </div></>
+              <>
+                <p className="text-xs text-base-content/40 mt-1 font-medium">外部电源</p>
+                {behaviorId !== extPowerBehavior.id && (
+                  <div className="flex justify-center">
+                    <button onClick={() => { setBehaviorId(extPowerBehavior.id); setParam1(0); setParam2(0); }}
+                      className="btn-apple px-4 py-2 rounded-xl bg-base-content/10 text-base-content/70 text-sm font-medium">
+                      设为外部电源
+                    </button>
+                  </div>
+                )}
+                {behaviorId === extPowerBehavior.id && extPowerBehavior.metadata && (
+                  <BehaviorParametersPicker
+                    metadata={extPowerBehavior.metadata}
+                    param1={param1}
+                    param2={param2}
+                    layers={layers}
+                    onParam1Changed={setParam1}
+                    onParam2Changed={setParam2}
+                  />
+                )}
+              </>
             )}
           </div>
         )}
+
 
         {activeCategory === "macro" && (
           <div className="flex flex-col gap-3 panel-fade-enter">
