@@ -116,7 +116,6 @@ export default function Keyboard() {
   const behaviors = useBehaviors();
   const conn = useContext(ConnectionContext);
   const undoRedo = useContext(UndoRedoContext);
-  const isConnected = !!conn.conn;
 
   useEffect(() => { setSelLayer(0); setSelKey(undefined); }, [conn]);
   useEffect(() => {
