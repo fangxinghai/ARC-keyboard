@@ -27,8 +27,6 @@ import { LockState } from "@zmkfirmware/zmk-studio-ts-client/core";
 import { LockStateContext } from "./rpc/LockStateContext";
 import { UnlockModal } from "./UnlockModal";
 import { valueAfter } from "./misc/async";
-import { AboutModal } from "./AboutModal";
-import { LicenseNoticeModal } from "./misc/LicenseNoticeModal";
 
 declare global {
   interface Window {
@@ -107,8 +105,6 @@ function App() {
   const [conn, setConn] = useState<ConnectionState>({ conn: null });
   const [connectedDeviceName, setConnectedDeviceName] = useState<string | undefined>(undefined);
   const [doIt, undo, redo, canUndo, canRedo, reset] = useUndoRedo();
-  const [showAbout, setShowAbout] = useState(false);
-  const [showLicenseNotice, setShowLicenseNotice] = useState(false);
   const [connectionAbort, setConnectionAbort] = useState(new AbortController());
   const [lockState, setLockState] = useState<LockState>(LockState.ZMK_STUDIO_CORE_LOCK_STATE_LOCKED);
 
@@ -179,8 +175,6 @@ function App() {
         <UndoRedoContext.Provider value={doIt}>
           <UnlockModal />
           <ConnectModal open={!conn.conn} transports={TRANSPORTS} onTransportCreated={onConnect} />
-          <AboutModal open={showAbout} onClose={() => setShowAbout(false)} />
-          <LicenseNoticeModal open={showLicenseNotice} onClose={() => setShowLicenseNotice(false)} />
 
           {/* ═══ 水彩背景 ═══ */}
           <WatercolorBackground />
@@ -200,8 +194,6 @@ function App() {
               onUndo={undo} onRedo={redo}
               onSave={save} onDiscard={discard}
               onDisconnect={disconnect} onResetSettings={resetSettings}
-              onShowAbout={() => setShowAbout(true)}
-              onShowLicenseNotice={() => setShowLicenseNotice(true)}
             />
             <Keyboard />
           </div>
