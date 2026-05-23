@@ -48,6 +48,7 @@ export const Key = ({ selected = false, width, height, oneU, header, onClick, ch
   const pw = width * oneU - 2;
   const ph = height * oneU - 2;
   const zh = translateHeader(header);
+  const isSmall = pw < 55;
 
   return (
     <button
@@ -63,23 +64,23 @@ export const Key = ({ selected = false, width, height, oneU, header, onClick, ch
       onClick={onClick}
     >
       {selected && <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />}
-      {/* Header: 行为类型（蓝牙/按键/瞬时层等）— 上方小字 */}
+      {/* Header: 行为类型 — 上方固定小字 */}
       {zh && (
         <div
-          className={`absolute top-[3px] left-0 right-0 text-center truncate leading-tight px-0.5 font-medium ${
-            selected ? "text-primary-content/50" : "text-base-content/25"
+          className={`absolute top-[2px] left-0 right-0 text-center truncate leading-tight px-0.5 font-medium ${
+            selected ? "text-primary-content/50" : "text-base-content/20"
           }`}
-          style={{ fontSize: Math.min(9, pw * 0.14) + "px" }}
+          style={{ fontSize: isSmall ? "6px" : "8px" }}
         >
           {zh}
         </div>
       )}
-      {/* Children: 具体内容（按键名/蓝牙配置等）— 居中，稍小稍淡 */}
+      {/* Children: 具体内容 — 居中，小字淡色，不截断 */}
       <div
-        className={`w-full truncate px-1 text-center font-medium leading-tight ${
-          selected ? "text-primary-content" : "text-base-content/50"
+        className={`w-full px-0.5 text-center font-medium leading-tight overflow-hidden ${
+          selected ? "text-primary-content" : "text-base-content/40"
         }`}
-        style={{ fontSize: Math.min(13, pw * 0.22) + "px" }}
+        style={{ fontSize: isSmall ? "8px" : "10px", wordBreak: "break-all", lineHeight: "1.2" }}
       >
         {children}
       </div>
