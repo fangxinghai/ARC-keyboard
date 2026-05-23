@@ -67,18 +67,16 @@ html.dark .noise-overlay { opacity: 0.04; mix-blend-mode: screen; }
   border: 1px solid light-dark(rgba(255,255,255,0.4), rgba(255,255,255,0.05));
 }
 
-/* ═══ 分组外框毛玻璃 ═══ */
 .group-frame {
   background: light-dark(rgba(255,255,255,0.25), rgba(255,255,255,0.04));
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   border: 1px solid light-dark(rgba(255,255,255,0.4), rgba(255,255,255,0.06));
   border-radius: 1rem;
 }
 
-/* ═══ 所有动画全部 ease-out，绝无弹簧 ═══ */
-.panel-fade-enter { animation: pfi 0.2s ease-out both; }
-@keyframes pfi { from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)} }
+/* ═══ 动画 — 全部 ease-out ═══ */
+.panel-fade-enter { animation: pfi 0.15s ease-out both; }
+@keyframes pfi { from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)} }
 .modal-overlay { animation: fi 0.15s ease-out both; }
 .modal-content { animation: si 0.2s ease-out both; }
 @keyframes fi { from{opacity:0}to{opacity:1} }
@@ -89,12 +87,11 @@ html.dark .noise-overlay { opacity: 0.04; mix-blend-mode: screen; }
 .btn-apple {
   display: inline-flex; align-items: center; justify-content: center;
   border-radius: 0.625rem; font-weight: 500; cursor: pointer; user-select: none;
-  transition: background-color 0.1s ease-out, box-shadow 0.1s ease-out;
 }
 
-/* ── 全局禁止 transform transition 避免弹簧 ── */
-button, [role="button"] {
-  transition: background-color 0.1s ease-out, box-shadow 0.1s ease-out, color 0.1s ease-out, opacity 0.1s ease-out !important;
+/* 编辑栏高度宽度过渡 — 纯 ease-out */
+.editor-panel {
+  transition: height 0.25s ease-out, width 0.25s ease-out;
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
