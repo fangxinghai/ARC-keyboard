@@ -296,7 +296,7 @@ export const BehaviorBindingPicker = ({
 
         {activeCategory === "keyboard" && (
           <div className="panel-fade-enter flex justify-center">
-            <div className="w-full max-w-[900px]" style={{ aspectRatio: "17/6" }}>
+            <div className="w-full max-w-[750px]" style={{ aspectRatio: "17/6" }}>
               <div className="w-full h-full flex flex-col gap-[2px] justify-between">
                 {KEYBOARD_ROWS.map((row, ri) => (
                   <div key={ri} className="flex gap-[2px] flex-1">
