@@ -1,26 +1,14 @@
 import {
-  CSSProperties,
-  PropsWithChildren,
-  useLayoutEffect,
-  useRef,
-  useState,
+  CSSProperties, PropsWithChildren, useLayoutEffect, useRef, useState,
 } from "react";
 import { Key } from "./Key";
 
 export type KeyPosition = PropsWithChildren<{
-  id: string;
-  header?: string;
-  width: number;
-  height: number;
-  x: number;
-  y: number;
-  r?: number;
-  rx?: number;
-  ry?: number;
+  id: string; header?: string; width: number; height: number;
+  x: number; y: number; r?: number; rx?: number; ry?: number;
 }>;
 
 export type LayoutZoom = number | "auto";
-
 export function deserializeLayoutZoom(value: string): LayoutZoom {
   if (value === "auto") return "auto";
   return parseFloat(value) || "auto";
@@ -35,61 +23,59 @@ interface PhysicalLayoutProps {
   onPositionClicked?: (position: number) => void;
 }
 
-interface PhysicalLayoutPositionLocation {
-  x: number; y: number; r?: number; rx?: number; ry?: number;
-}
-
-function scalePosition({ x, y, r, rx, ry }: PhysicalLayoutPositionLocation, oneU: number): CSSProperties {
+function scalePosition(
+  { x, y, r, rx, ry }: { x: number; y: number; r?: number; rx?: number; ry?: number },
+  oneU: number
+): CSSProperties {
   let left = x * oneU;
   let top = y * oneU;
   let transformOrigin = undefined;
   let transform = undefined;
-  const transformStyle: "preserve-3d" = "preserve-3d";
   if (r) {
-    let transformX = ((rx || x) - x) * oneU;
-    let transformY = ((ry || y) - y) * oneU;
-    transformOrigin = `${transformX}px ${transformY}px`;
+    transformOrigin = `${((rx || x) - x) * oneU}px ${((ry || y) - y) * oneU}px`;
     transform = `rotate(${r}deg)`;
   }
-  return { top, left, transformOrigin, transform, transformStyle };
+  return { top, left, transformOrigin, transform, transformStyle: "preserve-3d" as const };
 }
 
-// ─── 判断按键分组（左边按键区 vs 右边旋钮区）───
-function classifyPositions(positions: KeyPosition[]): { keys: number[]; encoders: number[] } {
-  if (positions.length <= 2) return { keys: [], encoders: positions.map((_, i) => i) };
+// ─── 分组：找到水平间隔 > 1.5U 的地方分割 ───
+function findGroups(positions: KeyPosition[]): number[][] {
+  if (positions.length === 0) return [];
+  if (positions.length <= 2) return [positions.map((_, i) => i)];
+
+  // 按 x+width 的右边界排序，找大间隔
+  const items = positions.map((p, i) => ({ i, left: p.x, right: p.x + p.width }));
+  items.sort((a, b) => a.left - b.left);
+
+  const groups: number[][] = [[items[0].i]];
   
-  // 按 x 坐标排序，找到右侧间隔最大的分界点
-  const sorted = positions.map((p, i) => ({ x: p.x, i })).sort((a, b) => a.x - b.x);
-  
-  let maxGap = 0;
-  let splitIdx = positions.length;
-  
-  for (let i = 1; i < sorted.length; i++) {
-    const gap = sorted[i].x - sorted[i - 1].x;
-    // 如果间隔大于 2U，并且右侧只有少量键（<=2），认为是旋钮
-    if (gap > 2 && sorted.length - i <= 2) {
-      if (gap > maxGap) {
-        maxGap = gap;
-        splitIdx = i;
-      }
+  for (let k = 1; k < items.length; k++) {
+    // 当前键的左边界 vs 上一个键的右边界
+    const gap = items[k].left - items[k - 1].right;
+    if (gap > 1.5) {
+      // 新组
+      groups.push([items[k].i]);
+    } else {
+      groups[groups.length - 1].push(items[k].i);
     }
   }
-  
-  if (maxGap > 0) {
-    const keyIndices = sorted.slice(0, splitIdx).map((s) => s.i);
-    const encoderIndices = sorted.slice(splitIdx).map((s) => s.i);
-    return { keys: keyIndices, encoders: encoderIndices };
-  }
-  
-  return { keys: positions.map((_, i) => i), encoders: [] };
+
+  return groups;
+}
+
+function getBounds(positions: KeyPosition[], indices: number[]) {
+  if (indices.length === 0) return null;
+  const ps = indices.map((i) => positions[i]);
+  return {
+    minX: Math.min(...ps.map((p) => p.x)),
+    minY: Math.min(...ps.map((p) => p.y)),
+    maxX: Math.max(...ps.map((p) => p.x + p.width)),
+    maxY: Math.max(...ps.map((p) => p.y + p.height)),
+  };
 }
 
 export const PhysicalLayout = ({
-  positions,
-  selectedPosition,
-  oneU = 48,
-  onPositionClicked,
-  ...props
+  positions, selectedPosition, oneU = 48, onPositionClicked, ...props
 }: PhysicalLayoutProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -99,103 +85,69 @@ export const PhysicalLayout = ({
     if (!element) return;
     const parent = element.parentElement;
     if (!parent) return;
-    const calculateScale = () => {
+    const calc = () => {
       if (props.zoom === "auto") {
-        const padding = Math.min(window.innerWidth, window.innerHeight) * 0.05;
-        const newScale = Math.min(
-          parent.clientWidth / (element.clientWidth + 2 * padding),
-          parent.clientHeight / (element.clientHeight + 2 * padding),
-        );
-        setScale(newScale);
+        const pad = Math.min(window.innerWidth, window.innerHeight) * 0.05;
+        setScale(Math.min(
+          parent.clientWidth / (element.clientWidth + 2 * pad),
+          parent.clientHeight / (element.clientHeight + 2 * pad),
+        ));
       } else {
         setScale(props.zoom || 1);
       }
     };
-    calculateScale();
-    const resizeObserver = new ResizeObserver(() => calculateScale());
-    resizeObserver.observe(element);
-    resizeObserver.observe(parent);
-    return () => resizeObserver.disconnect();
+    calc();
+    const ro = new ResizeObserver(calc);
+    ro.observe(element); ro.observe(parent);
+    return () => ro.disconnect();
   }, [props.zoom]);
 
-  let rightMost = positions.map((k) => k.x + k.width).reduce((a, b) => Math.max(a, b), 0);
-  let bottomMost = positions.map((k) => k.y + k.height).reduce((a, b) => Math.max(a, b), 0);
+  const rightMost = positions.map((k) => k.x + k.width).reduce((a, b) => Math.max(a, b), 0);
+  const bottomMost = positions.map((k) => k.y + k.height).reduce((a, b) => Math.max(a, b), 0);
 
-  // 计算按键区和旋钮区的边界
-  const { keys: keyIndices, encoders: encoderIndices } = classifyPositions(positions);
-
-  function getBounds(indices: number[]) {
-    if (indices.length === 0) return null;
-    const ps = indices.map((i) => positions[i]);
-    const minX = Math.min(...ps.map((p) => p.x));
-    const minY = Math.min(...ps.map((p) => p.y));
-    const maxX = Math.max(...ps.map((p) => p.x + p.width));
-    const maxY = Math.max(...ps.map((p) => p.y + p.height));
-    return { minX, minY, maxX, maxY };
-  }
-
-  const keyBounds = getBounds(keyIndices);
-  const encoderBounds = getBounds(encoderIndices);
-
-  const pad = 8; // px padding
-  const labelH = 18; // 标签高度
+  // 分组
+  const groups = findGroups(positions);
+  const pad = 8;
 
   const positionItems = positions.map((p, idx) => (
     <div className="absolute" style={scalePosition(p, oneU)} key={p.id}>
-      <div
-        onClick={() => onPositionClicked?.(idx)}
-        className="hover:[transform:translateZ(50px)] transition-transform duration-150 ease-out"
-      >
+      <div onClick={() => onPositionClicked?.(idx)}
+        className="hover:[transform:translateZ(30px)] transition-transform duration-100 ease-out">
         <Key oneU={oneU} selected={idx === selectedPosition} {...p} />
       </div>
     </div>
   ));
 
   return (
-    <div
-      className="relative"
+    <div className="relative" ref={ref}
       style={{
-        height: bottomMost * oneU + labelH + pad + "px",
+        height: bottomMost * oneU + 24 + "px",
         width: rightMost * oneU + "px",
         transform: `scale(${scale})`,
         transformStyle: "preserve-3d",
-      }}
-      ref={ref}
-    >
-      {/* ─── 按键区外框 ─── */}
-      {keyBounds && (
-        <div
-          className="absolute rounded-2xl border border-base-content/8 pointer-events-none"
-          style={{
-            left: keyBounds.minX * oneU - pad,
-            top: keyBounds.minY * oneU - pad,
-            width: (keyBounds.maxX - keyBounds.minX) * oneU + pad * 2,
-            height: (keyBounds.maxY - keyBounds.minY) * oneU + pad * 2,
-          }}
-        >
-          <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-base-content/25 font-medium whitespace-nowrap">
-            按键
-          </span>
-        </div>
-      )}
-
-      {/* ─── 旋钮区外框 ─── */}
-      {encoderBounds && (
-        <div
-          className="absolute rounded-2xl border border-base-content/8 pointer-events-none"
-          style={{
-            left: encoderBounds.minX * oneU - pad,
-            top: encoderBounds.minY * oneU - pad,
-            width: (encoderBounds.maxX - encoderBounds.minX) * oneU + pad * 2,
-            height: (encoderBounds.maxY - encoderBounds.minY) * oneU + pad * 2,
-          }}
-        >
-          <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-base-content/25 font-medium whitespace-nowrap">
-            旋钮
-          </span>
-        </div>
-      )}
-
+      }}>
+      {/* 分组外框 */}
+      {groups.map((group, gi) => {
+        const bounds = getBounds(positions, group);
+        if (!bounds) return null;
+        const label = group.length <= 2 && groups.length > 1 ? "旋钮" : "按键";
+        return (
+          <div key={gi} className="absolute rounded-2xl pointer-events-none"
+            style={{
+              left: bounds.minX * oneU - pad,
+              top: bounds.minY * oneU - pad,
+              width: (bounds.maxX - bounds.minX) * oneU + pad * 2,
+              height: (bounds.maxY - bounds.minY) * oneU + pad * 2,
+              border: "1px solid",
+              borderColor: "light-dark(rgba(0,0,0,0.08), rgba(255,255,255,0.1))",
+            }}>
+            <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-medium whitespace-nowrap"
+              style={{ color: "light-dark(rgba(0,0,0,0.2), rgba(255,255,255,0.2))" }}>
+              {label}
+            </span>
+          </div>
+        );
+      })}
       {positionItems}
     </div>
   );
