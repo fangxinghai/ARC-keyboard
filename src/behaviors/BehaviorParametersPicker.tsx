@@ -14,37 +14,23 @@ export interface BehaviorParametersPickerProps {
 export const BehaviorParametersPicker = ({
   param1, param2, metadata, layers, onParam1Changed, onParam2Changed,
 }: BehaviorParametersPickerProps) => {
+  const allP1 = metadata.flatMap((m) => m.param1);
+
   if (param1 === undefined) {
     return (
-      <div className="flex flex-wrap gap-2 items-center justify-center">
-        <ParameterValuePicker
-          values={metadata.flatMap((m) => m.param1)}
-          onValueChanged={onParam1Changed}
-          layers={layers}
-        />
-      </div>
-    );
-  } else {
-    const set = metadata.find((s) =>
-      validateValue(layers.map((l) => l.id), param1, s.param1)
-    );
-    return (
-      <div className="flex flex-wrap gap-2 items-center justify-center">
-        <ParameterValuePicker
-          values={metadata.flatMap((m) => m.param1)}
-          value={param1}
-          layers={layers}
-          onValueChanged={onParam1Changed}
-        />
-        {(set?.param2?.length || 0) > 0 && (
-          <ParameterValuePicker
-            values={set!.param2}
-            value={param2}
-            layers={layers}
-            onValueChanged={onParam2Changed}
-          />
-        )}
+      <div className="inline-flex flex-wrap gap-1 items-center justify-center">
+        <ParameterValuePicker values={allP1} onValueChanged={onParam1Changed} layers={layers} />
       </div>
     );
   }
+
+  const set = metadata.find((s) => validateValue(layers.map((l) => l.id), param1, s.param1));
+  return (
+    <div className="inline-flex flex-wrap gap-1 items-center justify-center">
+      <ParameterValuePicker values={allP1} value={param1} layers={layers} onValueChanged={onParam1Changed} />
+      {(set?.param2?.length || 0) > 0 && (
+        <ParameterValuePicker values={set!.param2} value={param2} layers={layers} onValueChanged={onParam2Changed} />
+      )}
+    </div>
+  );
 };
