@@ -92,7 +92,7 @@ export const PhysicalLayout = ({
       {groups.map((group, gi) => {
         const bounds = getBounds(positions, group);
         if (!bounds) return null;
-        const isEncoder = group.length <= 3 && groups.length > 1;
+
         return (
           <div key={gi} className="absolute group-frame pointer-events-none" style={{
             left: bounds.minX * oneU - pad, top: bounds.minY * oneU - pad,
