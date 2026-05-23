@@ -7,7 +7,6 @@ import React, {
   useState,
 } from "react";
 
-import { Request } from "@zmkfirmware/zmk-studio-ts-client";
 import { call_rpc } from "../rpc/logging";
 import {
   PhysicalLayout,
@@ -44,12 +43,12 @@ function useBehaviors(): BehaviorMap {
     async function startRequest() {
       setBehaviors({});
       if (!connection.conn) return;
-      let behavior_list = await call_rpc(connection.conn, { behaviors: { listAllBehaviors: true }, requestId: 0 });
+      let behavior_list = await call_rpc(connection.conn, { behaviors: { listAllBehaviors: true } });
       if (!ignore) {
         let behavior_map: BehaviorMap = {};
         for (let behaviorId of behavior_list.behaviors?.listAllBehaviors?.behaviors || []) {
           if (ignore) break;
-          let behavior_details = await call_rpc(connection.conn, { behaviors: { getBehaviorDetails: { behaviorId } }, requestId: 0 });
+          let behavior_details = await call_rpc(connection.conn, { behaviors: { getBehaviorDetails: { behaviorId } } });
           let dets = behavior_details?.behaviors?.getBehaviorDetails;
           if (dets) behavior_map[dets.id] = dets;
         }
@@ -236,7 +235,7 @@ export default function Keyboard() {
       {/* ═══ 底部改键面板 — 悬浮卡片 ═══ */}
       {keymap && selectedBinding && (
         <div className="col-start-2 row-start-2 px-3 pb-3">
-          <div className="glass-heavy rounded-2xl shadow-apple-lg p-4 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+          <div className="glass-heavy rounded-2xl shadow-apple-lg p-4">
             <BehaviorBindingPicker
               binding={selectedBinding}
               behaviors={Object.values(behaviors)}
