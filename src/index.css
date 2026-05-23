@@ -33,85 +33,56 @@ body {
 @media (min-width: 3840px) { html { font-size: 24px; } }
 
 /* ═══════════════════════════════════════════
-   3 个幻彩动画球 — 纯 CSS GPU 加速
+   3 个幻彩动画球 — 粉红 / 天蓝 / 紫色
+   速度比之前快 20%
    ═══════════════════════════════════════════ */
 .arc-blob {
   position: absolute;
   border-radius: 50%;
   will-change: transform;
-  /* 关键：全部用 transform，触发 GPU 合成层 */
   transform: translateZ(0);
 }
 
-/* ── 球 1：粉红 → 橙 ── */
 .arc-blob-1 {
-  width: 55vmax;
-  height: 55vmax;
+  width: 55vmax; height: 55vmax;
   background: radial-gradient(circle at 40% 40%,
-    rgba(255, 110, 150, 0.55) 0%,
-    rgba(255, 160, 100, 0.2) 50%,
-    transparent 70%
-  );
+    rgba(255, 110, 150, 0.55) 0%, rgba(255, 160, 100, 0.2) 50%, transparent 70%);
   filter: blur(60px);
-  top: -20%;
-  left: -15%;
-  animation: blob-drift-1 14s ease-in-out infinite alternate;
+  top: -20%; left: -15%;
+  animation: blob-drift-1 11.2s ease-in-out infinite alternate;
 }
 
-/* ── 球 2：天蓝 → 薰衣草 ── */
 .arc-blob-2 {
-  width: 50vmax;
-  height: 50vmax;
+  width: 50vmax; height: 50vmax;
   background: radial-gradient(circle at 60% 30%,
-    rgba(80, 190, 255, 0.5) 0%,
-    rgba(160, 120, 255, 0.18) 50%,
-    transparent 70%
-  );
+    rgba(80, 190, 255, 0.5) 0%, rgba(160, 120, 255, 0.18) 50%, transparent 70%);
   filter: blur(60px);
-  top: 10%;
-  right: -20%;
-  animation: blob-drift-2 16s ease-in-out infinite alternate;
+  top: 10%; right: -20%;
+  animation: blob-drift-2 12.8s ease-in-out infinite alternate;
 }
 
-/* ── 球 3：薄荷绿 → 柠檬黄 ── */
 .arc-blob-3 {
-  width: 50vmax;
-  height: 50vmax;
+  width: 50vmax; height: 50vmax;
   background: radial-gradient(circle at 50% 60%,
-    rgba(100, 230, 170, 0.45) 0%,
-    rgba(255, 220, 90, 0.15) 50%,
-    transparent 70%
-  );
+    rgba(160, 100, 255, 0.5) 0%, rgba(200, 140, 255, 0.18) 50%, transparent 70%);
   filter: blur(60px);
-  bottom: -20%;
-  left: 15%;
-  animation: blob-drift-3 18s ease-in-out infinite alternate;
+  bottom: -20%; left: 15%;
+  animation: blob-drift-3 14.4s ease-in-out infinite alternate;
 }
 
-/* ── 暗色模式 ── */
 html.dark .arc-blob-1 {
   background: radial-gradient(circle at 40% 40%,
-    rgba(255, 55, 95, 0.5) 0%,
-    rgba(255, 120, 60, 0.15) 50%,
-    transparent 70%
-  );
+    rgba(255, 55, 95, 0.5) 0%, rgba(255, 120, 60, 0.15) 50%, transparent 70%);
 }
 html.dark .arc-blob-2 {
   background: radial-gradient(circle at 60% 30%,
-    rgba(10, 132, 255, 0.5) 0%,
-    rgba(140, 80, 240, 0.15) 50%,
-    transparent 70%
-  );
+    rgba(10, 132, 255, 0.5) 0%, rgba(140, 80, 240, 0.15) 50%, transparent 70%);
 }
 html.dark .arc-blob-3 {
   background: radial-gradient(circle at 50% 60%,
-    rgba(48, 209, 88, 0.4) 0%,
-    rgba(255, 214, 10, 0.12) 50%,
-    transparent 70%
-  );
+    rgba(140, 70, 255, 0.45) 0%, rgba(180, 100, 255, 0.12) 50%, transparent 70%);
 }
 
-/* ── 漂移动画 — 只用 transform，GPU 友好 ── */
 @keyframes blob-drift-1 {
   0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
   100% { transform: translate(25vw, 20vh) scale(1.15) rotate(30deg); }
@@ -125,27 +96,20 @@ html.dark .arc-blob-3 {
   100% { transform: translate(15vw, -20vh) scale(0.9) rotate(20deg); }
 }
 
-/* ═══ 白色蒙版 ═══ */
+/* ═══ 蒙版 & 噪点 ═══ */
 .white-wash {
   position: fixed; inset: 0; z-index: 1;
   pointer-events: none;
   background: rgba(255,255,255,0.35);
 }
-html.dark .white-wash {
-  background: rgba(0,0,0,0.3);
-}
+html.dark .white-wash { background: rgba(0,0,0,0.3); }
 
-/* ═══ 噪点 ═══ */
 .noise-overlay {
   position: fixed; inset: 0; z-index: 1;
   pointer-events: none;
-  opacity: 0.025;
-  mix-blend-mode: multiply;
+  opacity: 0.025; mix-blend-mode: multiply;
 }
-html.dark .noise-overlay {
-  opacity: 0.04;
-  mix-blend-mode: screen;
-}
+html.dark .noise-overlay { opacity: 0.04; mix-blend-mode: screen; }
 
 /* ═══ 毛玻璃 ═══ */
 .glass {
@@ -167,41 +131,32 @@ html.dark .noise-overlay {
   border: 1px solid light-dark(rgba(255,255,255,0.4), rgba(255,255,255,0.05));
 }
 
-/* ═══ 动画（不影响 layout 的属性才做全局过渡）═══ */
-.key-press {
-  transition: transform 0.15s cubic-bezier(0.16,1,0.3,1),
-              box-shadow 0.2s ease,
-              background-color 0.15s ease;
-}
-.key-press:hover { transform: translateY(-1px) scale(1.02); }
-.key-press:active { transform: translateY(0) scale(0.97); transition-duration: 0.06s; }
-
+/* ═══ 动画 — 全部用平滑 ease，无弹簧 ═══ */
 .panel-fade-enter {
-  animation: panelFadeIn 0.2s ease-out both;
+  animation: panelFadeIn 0.25s ease both;
 }
 @keyframes panelFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.modal-overlay { animation: fadeIn 0.2s ease-out both; }
-.modal-content { animation: scaleIn 0.25s cubic-bezier(0.16,1,0.3,1) both; }
-
+.modal-overlay { animation: fadeIn 0.2s ease both; }
+.modal-content { animation: scaleIn 0.25s ease both; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
 
+/* Tab 胶囊 — 平滑无弹簧 */
 .tab-capsule {
-  transition: left 0.3s cubic-bezier(0.16,1,0.3,1),
-              width 0.3s cubic-bezier(0.16,1,0.3,1);
+  transition: left 0.3s ease, width 0.3s ease;
 }
 
 .btn-apple {
   display: inline-flex; align-items: center; justify-content: center;
   border-radius: 0.625rem; font-weight: 500; cursor: pointer; user-select: none;
-  transition: transform 0.15s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s ease, background-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 .btn-apple:hover { transform: scale(1.02); }
-.btn-apple:active { transform: scale(0.97); transition-duration: 0.06s; }
+.btn-apple:active { transform: scale(0.98); transition-duration: 0.06s; }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
