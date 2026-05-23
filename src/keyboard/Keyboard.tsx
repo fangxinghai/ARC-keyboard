@@ -71,7 +71,7 @@ function useLayouts(): [PhysicalLayout[] | undefined, React.Dispatch<SetStateAct
 function PlaceholderKeyboard({ onKeyClicked }: { onKeyClicked?: (i: number) => void }) {
   const oneU = 80;
   return (
-    <div className="flex flex-col items-center gap-6 py-8">
+    <div className="flex flex-col items-center gap-6">
       <div className="flex gap-6 items-start">
         <div className="relative">
           <div className="group-frame p-3">
@@ -119,18 +119,11 @@ export default function Keyboard() {
 
   useEffect(() => { setSelLayer(0); setSelKey(undefined); }, [conn]);
   useEffect(() => {
-    async function go() {
-      if (!conn.conn || !layouts) return;
-      let r = await call_rpc(conn.conn, { keymap: { setActivePhysicalLayout: selPhysIdx } });
-      if (r?.keymap?.setActivePhysicalLayout?.ok) setKeymap(r.keymap.setActivePhysicalLayout.ok);
-    }
+    async function go() { if (!conn.conn || !layouts) return; let r = await call_rpc(conn.conn, { keymap: { setActivePhysicalLayout: selPhysIdx } }); if (r?.keymap?.setActivePhysicalLayout?.ok) setKeymap(r.keymap.setActivePhysicalLayout.ok); }
     go();
   }, [selPhysIdx]);
 
-  let doSelectPhysicalLayout = useCallback((i: number) => {
-    let old = selPhysIdx;
-    undoRedo?.(async () => { setSelPhysIdx(i); return async () => { setSelPhysIdx(old); }; });
-  }, [undoRedo, selPhysIdx]);
+  let doSelectPhysicalLayout = useCallback((i: number) => { let old = selPhysIdx; undoRedo?.(async () => { setSelPhysIdx(i); return async () => { setSelPhysIdx(old); }; }); }, [undoRedo, selPhysIdx]);
 
   let doUpdateBinding = useCallback((binding: BehaviorBinding) => {
     if (!keymap || selKey === undefined) return;
@@ -139,26 +132,14 @@ export default function Keyboard() {
     undoRedo?.(async () => {
       if (!conn.conn) throw new Error("Not connected");
       let r = await call_rpc(conn.conn, { keymap: { setLayerBinding: { layerId, keyPosition: kp, binding } } });
-      if (r.keymap?.setLayerBinding === SetLayerBindingResponse.SET_LAYER_BINDING_RESP_OK)
-        setKeymap(produce((d: any) => { d.layers[layer].bindings[kp] = binding; }));
-      return async () => {
-        if (!conn.conn) return;
-        let r2 = await call_rpc(conn.conn, { keymap: { setLayerBinding: { layerId, keyPosition: kp, binding: old } } });
-        if (r2.keymap?.setLayerBinding === SetLayerBindingResponse.SET_LAYER_BINDING_RESP_OK)
-          setKeymap(produce((d: any) => { d.layers[layer].bindings[kp] = old; }));
-      };
+      if (r.keymap?.setLayerBinding === SetLayerBindingResponse.SET_LAYER_BINDING_RESP_OK) setKeymap(produce((d: any) => { d.layers[layer].bindings[kp] = binding; }));
+      return async () => { if (!conn.conn) return; let r2 = await call_rpc(conn.conn, { keymap: { setLayerBinding: { layerId, keyPosition: kp, binding: old } } }); if (r2.keymap?.setLayerBinding === SetLayerBindingResponse.SET_LAYER_BINDING_RESP_OK) setKeymap(produce((d: any) => { d.layers[layer].bindings[kp] = old; })); };
     });
   }, [conn, keymap, undoRedo, selLayer, selKey]);
 
-  let selectedBinding = useMemo(() => {
-    if (!keymap || selKey == null || !keymap.layers[selLayer]) return null;
-    return keymap.layers[selLayer].bindings[selKey];
-  }, [keymap, selLayer, selKey]);
+  let selectedBinding = useMemo(() => { if (!keymap || selKey == null || !keymap.layers[selLayer]) return null; return keymap.layers[selLayer].bindings[selKey]; }, [keymap, selLayer, selKey]);
 
-  const moveLayer = useCallback((s: number, e: number) => {
-    const doMove = async (a: number, b: number) => { if (!conn.conn) return; let r = await call_rpc(conn.conn, { keymap: { moveLayer: { startIndex: a, destIndex: b } } }); if (r.keymap?.moveLayer?.ok) { setKeymap(r.keymap.moveLayer.ok); setSelLayer(b); } };
-    undoRedo?.(async () => { await doMove(s, e); return () => doMove(e, s); });
-  }, [undoRedo]);
+  const moveLayer = useCallback((s: number, e: number) => { const doMove = async (a: number, b: number) => { if (!conn.conn) return; let r = await call_rpc(conn.conn, { keymap: { moveLayer: { startIndex: a, destIndex: b } } }); if (r.keymap?.moveLayer?.ok) { setKeymap(r.keymap.moveLayer.ok); setSelLayer(b); } }; undoRedo?.(async () => { await doMove(s, e); return () => doMove(e, s); }); }, [undoRedo]);
 
   const addLayer = useCallback(() => {
     async function doAdd(): Promise<number> { if (!conn.conn || !keymap) throw new Error("Not connected"); const r = await call_rpc(conn.conn, { keymap: { addLayer: {} } }); if (r.keymap?.addLayer?.ok) { setKeymap(produce((d: any) => { d.layers.push(r.keymap!.addLayer!.ok!.layer); d.availableLayers--; })); setSelLayer(keymap.layers.length); return r.keymap.addLayer.ok.index; } throw new Error("Failed"); }
@@ -183,9 +164,9 @@ export default function Keyboard() {
   const hasRealData = !!(layouts && keymap && Object.keys(behaviors).length > 0);
 
   return (
-    <div className="grid grid-cols-[auto_1fr] grid-rows-[1fr_1fr] max-w-full min-w-0 min-h-0 overflow-hidden p-2 pt-0 gap-2">
+    <div className="grid grid-cols-[auto_1fr] max-w-full min-w-0 min-h-0 overflow-hidden p-2 pt-0 gap-2" style={{ height: "100%" }}>
       {/* 左侧面板 */}
-      <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-3 flex flex-col gap-3 row-span-2 min-w-[130px] my-1">
+      <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-3 flex flex-col gap-3 min-w-[130px] my-1">
         {layouts ? (
           <PhysicalLayoutPicker layouts={layouts} selectedPhysicalLayoutIndex={selPhysIdx} onPhysicalLayoutClicked={doSelectPhysicalLayout} />
         ) : (
@@ -198,44 +179,47 @@ export default function Keyboard() {
         )}
       </div>
 
-      {/* 中间键盘 — 占满上半部分 */}
-      <div className="col-start-2 row-start-1 grid items-center justify-center relative min-w-0">
-        {hasRealData ? (
-          <>
-            <KeymapComp keymap={keymap!} layout={layouts![selPhysIdx]} behaviors={behaviors} scale={keymapScale} selectedLayerIndex={selLayer} selectedKeyPosition={selKey} onKeyPositionClicked={setSelKey} />
-            <select className="absolute top-2 right-2 h-7 rounded-lg px-2 text-xs glass border-0 outline-none cursor-pointer font-medium text-base-content/40"
-              value={keymapScale} onChange={(e) => setKeymapScale(deserializeLayoutZoom(e.target.value))}>
-              <option value="auto">自动</option><option value={0.5}>50%</option><option value={0.75}>75%</option>
-              <option value={1}>100%</option><option value={1.25}>125%</option><option value={1.5}>150%</option>
-            </select>
-          </>
-        ) : (
-          <PlaceholderKeyboard onKeyClicked={(i) => setSelKey(i)} />
+      {/* 右侧：键盘居中 + 底部编辑栏固定高度 */}
+      <div className="col-start-2 flex flex-col min-w-0 min-h-0 my-1">
+        {/* 键盘 — 绝对居中 */}
+        <div className="flex-1 grid items-center justify-center relative min-w-0 min-h-0">
+          {hasRealData ? (
+            <>
+              <KeymapComp keymap={keymap!} layout={layouts![selPhysIdx]} behaviors={behaviors} scale={keymapScale} selectedLayerIndex={selLayer} selectedKeyPosition={selKey} onKeyPositionClicked={setSelKey} />
+              <select className="absolute top-2 right-2 h-7 rounded-lg px-2 text-xs glass border-0 outline-none cursor-pointer font-medium text-base-content/40"
+                value={keymapScale} onChange={(e) => setKeymapScale(deserializeLayoutZoom(e.target.value))}>
+                <option value="auto">自动</option><option value={0.5}>50%</option><option value={0.75}>75%</option>
+                <option value={1}>100%</option><option value={1.25}>125%</option><option value={1.5}>150%</option>
+              </select>
+            </>
+          ) : (
+            <PlaceholderKeyboard onKeyClicked={(i) => setSelKey(i)} />
+          )}
+        </div>
+
+        {/* ═══ 底部编辑栏 — 固定高度，不随内容变化 ═══ */}
+        {selKey !== undefined && (
+          <div className="flex-shrink-0 flex justify-center pb-1">
+            <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-4 w-full max-w-4xl overflow-y-auto" style={{ height: "280px" }}>
+              {hasRealData && selectedBinding ? (
+                <BehaviorBindingPicker
+                  binding={selectedBinding}
+                  behaviors={Object.values(behaviors)}
+                  layers={keymap!.layers.map(({ id, name }, li) => ({ id, name: name || li.toLocaleString() }))}
+                  onBindingChanged={doUpdateBinding}
+                />
+              ) : (
+                <BehaviorBindingPicker
+                  binding={{ behaviorId: 0, param1: 0, param2: 0 }}
+                  behaviors={[]}
+                  layers={[{ id: 0, name: "Layer 0" }]}
+                  onBindingChanged={() => {}}
+                />
+              )}
+            </div>
+          </div>
         )}
       </div>
-
-      {/* ═══ 底部编辑栏 — 在键盘下方到屏幕底部的空间居中 ═══ */}
-      {selKey !== undefined && (
-        <div className="col-start-2 row-start-2 place-self-center">
-          <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-4">
-            {hasRealData && selectedBinding ? (
-              <BehaviorBindingPicker
-                binding={selectedBinding}
-                behaviors={Object.values(behaviors)}
-                layers={keymap!.layers.map(({ id, name }, li) => ({ id, name: name || li.toLocaleString() }))}
-                onBindingChanged={doUpdateBinding}
-              />
-            ) : (
-              <BehaviorBindingPicker
-                binding={{ behaviorId: 0, param1: 0, param2: 0 }}
-                behaviors={[]}
-                layers={[{ id: 0, name: "Layer 0" }]}
-                onBindingChanged={() => {}}
-              />
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
