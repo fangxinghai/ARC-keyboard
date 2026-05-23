@@ -12,9 +12,12 @@ import { useModalRef } from "./misc/useModalRef";
 import { LockStateContext } from "./rpc/LockStateContext";
 import { LockState } from "@zmkfirmware/zmk-studio-ts-client/core";
 import { ConnectionContext } from "./rpc/ConnectionContext";
-import { ChevronDown, Undo2, Redo2, Save, Trash2, Sun, Moon } from "lucide-react";
+import { ChevronDown, Undo2, Redo2, Save, Trash2, Sun, Moon, Usb, Bluetooth } from "lucide-react";
 import { Tooltip } from "./misc/Tooltip";
 import { GenericModal } from "./GenericModal";
+import type { TransportFactory } from "./ConnectModal";
+import type { RpcTransport } from "@zmkfirmware/zmk-studio-ts-client/transport/index";
+import { UserCancelledError } from "@zmkfirmware/zmk-studio-ts-client/transport/errors";
 
 export interface AppHeaderProps {
   connectedDeviceLabel?: string;
@@ -26,16 +29,22 @@ export interface AppHeaderProps {
   onDisconnect?: () => void | Promise<void>;
   canUndo?: boolean;
   canRedo?: boolean;
+  transports?: TransportFactory[];
+  onTransportCreated?: (t: RpcTransport) => void;
 }
 
 export const AppHeader = ({
   connectedDeviceLabel,
   canRedo, canUndo,
   onRedo, onUndo, onSave, onDiscard, onDisconnect, onResetSettings,
+  transports, onTransportCreated,
 }: AppHeaderProps) => {
   const [showSettingsReset, setShowSettingsReset] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const lockState = useContext(LockStateContext);
   const connectionState = useContext(ConnectionContext);
+
+  const isConnected = !!connectedDeviceLabel;
 
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem("arc-theme");
@@ -60,19 +69,39 @@ export const AppHeader = ({
     { keymap: { checkUnsavedChanges: true } },
     (r) => r.keymap?.checkUnsavedChanges
   );
-  useSub("rpc_notification.keymap.unsavedChangesStatusChanged", (unsaved) => setUnsaved(unsaved));
+  useSub("rpc_notification.keymap.unsavedChangesStatusChanged", (u) => setUnsaved(u));
+
+  // ─── 连接逻辑 ───
+  const handleConnect = async (transport: TransportFactory) => {
+    if (!onTransportCreated) return;
+    setConnecting(true);
+    try {
+      if (transport.connect) {
+        const t = await transport.connect();
+        if (t) onTransportCreated(t);
+      }
+    } catch (e) {
+      if (e instanceof Error && !(e instanceof UserCancelledError)) {
+        console.error(e);
+      }
+    } finally {
+      setConnecting(false);
+    }
+  };
 
   const iconBtn = "flex items-center justify-center p-2 rounded-xl transition-all duration-150 ease-out";
 
   return (
     <div className="p-2 pb-0">
       <header className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] grid grid-cols-[1fr_auto_1fr] items-center h-11 max-w-full px-2">
+        {/* ─── 左侧 Logo ─── */}
         <div className="flex px-2 items-center gap-2.5">
           <span className="text-lg font-bold tracking-wider bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">ARC</span>
           <div className="w-px h-4 bg-base-content/10" />
           <span className="text-xs text-base-content/35 font-medium">改键器</span>
         </div>
 
+        {/* ─── 恢复出厂 Modal ─── */}
         <GenericModal ref={showSettingsRef} className="max-w-[50vw]">
           <div className="flex flex-col gap-4 py-1">
             <h2 className="text-lg font-semibold">⚠️ 恢复出厂设置</h2>
@@ -87,26 +116,58 @@ export const AppHeader = ({
           </div>
         </GenericModal>
 
-        <MenuTrigger>
-          <Button className="text-center rac-disabled:opacity-0 hover:bg-base-content/5 transition-all duration-150 p-2 pl-3.5 rounded-xl text-sm font-medium" isDisabled={!connectedDeviceLabel}>
-            <span className="inline-flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75" style={{ animation: "ping 1.5s cubic-bezier(0,0,0.2,1) infinite" }}></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-              </span>
-              {connectedDeviceLabel}
-            </span>
-            <ChevronDown className="inline-block w-3.5 ml-1.5 text-base-content/30" />
-          </Button>
-          <Popover>
-            <Menu className="glass-heavy shadow-apple-lg rounded-xl text-base-content cursor-pointer overflow-hidden min-w-[160px]">
-              <MenuItem className="px-4 py-2.5 hover:bg-base-content/5 text-sm outline-none" onAction={onDisconnect}>断开连接</MenuItem>
-              <div className="h-px bg-base-content/5 mx-2" />
-              <MenuItem className="px-4 py-2.5 hover:bg-error/10 text-sm text-error outline-none" onAction={() => setShowSettingsReset(true)}>恢复出厂设置</MenuItem>
-            </Menu>
-          </Popover>
-        </MenuTrigger>
+        {/* ─── 中间：连接状态/连接按钮 ─── */}
+        <div className="flex items-center justify-center">
+          {isConnected ? (
+            /* 已连接 → 设备名 + 下拉菜单 */
+            <MenuTrigger>
+              <Button className="text-center hover:bg-base-content/5 transition-all duration-150 p-2 pl-3.5 rounded-xl text-sm font-medium">
+                <span className="inline-flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75" style={{ animation: "ping 1.5s cubic-bezier(0,0,0.2,1) infinite" }}></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+                  </span>
+                  {connectedDeviceLabel}
+                </span>
+                <ChevronDown className="inline-block w-3.5 ml-1.5 text-base-content/30" />
+              </Button>
+              <Popover>
+                <Menu className="glass-heavy shadow-apple-lg rounded-xl text-base-content cursor-pointer overflow-hidden min-w-[160px]">
+                  <MenuItem className="px-4 py-2.5 hover:bg-base-content/5 text-sm outline-none" onAction={onDisconnect}>断开连接</MenuItem>
+                  <div className="h-px bg-base-content/5 mx-2" />
+                  <MenuItem className="px-4 py-2.5 hover:bg-error/10 text-sm text-error outline-none" onAction={() => setShowSettingsReset(true)}>恢复出厂设置</MenuItem>
+                </Menu>
+              </Popover>
+            </MenuTrigger>
+          ) : (
+            /* 未连接 → 连接按钮 */
+            <div className="flex items-center gap-1.5">
+              {transports && transports.length > 0 ? (
+                transports.map((t) => (
+                  <button
+                    key={t.label}
+                    onClick={() => handleConnect(t)}
+                    disabled={connecting}
+                    className="btn-apple flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-primary text-white hover:opacity-90 disabled:opacity-50"
+                  >
+                    {connecting ? (
+                      <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : t.label === "USB" || t.label === "USB 有线" ? (
+                      <Usb className="w-3.5 h-3.5" />
+                    ) : (
+                      <Bluetooth className="w-3.5 h-3.5" />
+                    )}
+                    {t.label === "USB" ? "USB 连接" : t.label === "BLE" ? "蓝牙连接" : t.label}
+                  </button>
+                ))
+              ) : (
+                <span className="text-xs text-base-content/30">浏览器不支持连接</span>
+              )}
+            </div>
+          )}
+        </div>
 
+        {/* ─── 右侧操作按钮 ─── */}
         <div className="flex justify-end gap-0.5 px-2 items-center">
           {onUndo && (
             <Tooltip label="撤销"><Button className={`${iconBtn} enabled:hover:bg-base-content/5 disabled:opacity-20 enabled:active:scale-95`} isDisabled={!canUndo} onPress={onUndo}><Undo2 className="w-4 h-4" /></Button></Tooltip>
