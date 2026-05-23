@@ -193,26 +193,6 @@ export const BehaviorBindingPicker = ({
   useLayoutEffect(updateCapsule, [updateCapsule]);
   useEffect(() => { window.addEventListener("resize", updateCapsule); return () => window.removeEventListener("resize", updateCapsule); }, [updateCapsule]);
 
-  const contentRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = contentRef.current; if (!el) return;
-    const oldH = el.offsetHeight;
-    el.style.height = "auto";
-    requestAnimationFrame(() => {
-      const newH = el.scrollHeight;
-      if (Math.abs(oldH - newH) > 2) {
-        el.style.height = oldH + "px";
-        // 用 double-rAF 保证浏览器先渲染旧高度
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            el.style.height = newH + "px";
-            const onEnd = () => { el.style.height = "auto"; el.removeEventListener("transitionend", onEnd); };
-            el.addEventListener("transitionend", onEnd, { once: true });
-          });
-        });
-      }
-    });
-  }, [activeCategory]);
 
   const metadata = useMemo(() => behaviors.find((b) => b.id == behaviorId)?.metadata, [behaviorId, behaviors]);
   const sortedBehaviors = useMemo(() => [...behaviors].sort((a, b) => a.displayName.localeCompare(b.displayName)), [behaviors]);
