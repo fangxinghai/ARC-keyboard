@@ -24,8 +24,6 @@ export interface AppHeaderProps {
   onRedo?: () => Promise<void>;
   onResetSettings?: () => void | Promise<void>;
   onDisconnect?: () => void | Promise<void>;
-  onShowAbout?: () => void;
-  onShowLicenseNotice?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
 }
@@ -34,7 +32,6 @@ export const AppHeader = ({
   connectedDeviceLabel,
   canRedo, canUndo,
   onRedo, onUndo, onSave, onDiscard, onDisconnect, onResetSettings,
-  onShowAbout, onShowLicenseNotice,
 }: AppHeaderProps) => {
   const [showSettingsReset, setShowSettingsReset] = useState(false);
   const lockState = useContext(LockStateContext);
@@ -93,7 +90,7 @@ export const AppHeader = ({
         <Button className="text-center rac-disabled:opacity-0 hover:bg-base-content/5 transition-all duration-200 p-2 pl-3.5 rounded-xl text-sm font-medium" isDisabled={!connectedDeviceLabel}>
           <span className="inline-flex items-center gap-2">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" style={{ animationDuration: '1.5s' }}></span>
+              <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75" style={{ animation: "ping 1.5s cubic-bezier(0,0,0.2,1) infinite" }}></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
             </span>
             {connectedDeviceLabel}
