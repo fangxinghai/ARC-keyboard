@@ -183,9 +183,9 @@ export default function Keyboard() {
   const hasRealData = !!(layouts && keymap && Object.keys(behaviors).length > 0);
 
   return (
-    <div className="flex h-full overflow-hidden p-2 pt-0 gap-2">
+    <div className="grid grid-cols-[auto_1fr] grid-rows-[1fr_1fr] max-w-full min-w-0 min-h-0 overflow-hidden p-2 pt-0 gap-2">
       {/* 左侧面板 */}
-      <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-3 flex flex-col gap-3 shrink-0 min-w-[130px] my-1">
+      <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-3 flex flex-col gap-3 row-span-2 min-w-[130px] my-1">
         {layouts ? (
           <PhysicalLayoutPicker layouts={layouts} selectedPhysicalLayoutIndex={selPhysIdx} onPhysicalLayoutClicked={doSelectPhysicalLayout} />
         ) : (
@@ -198,47 +198,44 @@ export default function Keyboard() {
         )}
       </div>
 
-      {/* 右侧：键盘 + 编辑栏 纵向排列 */}
-      <div className="flex flex-col flex-1 min-w-0 my-1 gap-0">
-        {/* 键盘区域 — 自适应高度 */}
-        <div className="flex-shrink-0 grid items-center justify-center relative min-w-0 py-2">
-          {hasRealData ? (
-            <>
-              <KeymapComp keymap={keymap!} layout={layouts![selPhysIdx]} behaviors={behaviors} scale={keymapScale} selectedLayerIndex={selLayer} selectedKeyPosition={selKey} onKeyPositionClicked={setSelKey} />
-              <select className="absolute top-2 right-1 h-7 rounded-lg px-2 text-xs glass border-0 outline-none cursor-pointer font-medium text-base-content/40"
-                value={keymapScale} onChange={(e) => setKeymapScale(deserializeLayoutZoom(e.target.value))}>
-                <option value="auto">自动</option><option value={0.5}>50%</option><option value={0.75}>75%</option>
-                <option value={1}>100%</option><option value={1.25}>125%</option><option value={1.5}>150%</option>
-              </select>
-            </>
-          ) : (
-            <PlaceholderKeyboard onKeyClicked={(i) => setSelKey(i)} />
-          )}
-        </div>
-
-        {/* ═══ 编辑栏 — 占据键盘下方到屏幕底部的空间，垂直居中 ═══ */}
-        {selKey !== undefined && (
-          <div className="flex-1 flex items-center justify-center min-h-0">
-            <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-4 editor-panel">
-              {hasRealData && selectedBinding ? (
-                <BehaviorBindingPicker
-                  binding={selectedBinding}
-                  behaviors={Object.values(behaviors)}
-                  layers={keymap!.layers.map(({ id, name }, li) => ({ id, name: name || li.toLocaleString() }))}
-                  onBindingChanged={doUpdateBinding}
-                />
-              ) : (
-                <BehaviorBindingPicker
-                  binding={{ behaviorId: 0, param1: 0, param2: 0 }}
-                  behaviors={[]}
-                  layers={[{ id: 0, name: "Layer 0" }]}
-                  onBindingChanged={() => {}}
-                />
-              )}
-            </div>
-          </div>
+      {/* 中间键盘 — 占满上半部分 */}
+      <div className="col-start-2 row-start-1 grid items-center justify-center relative min-w-0">
+        {hasRealData ? (
+          <>
+            <KeymapComp keymap={keymap!} layout={layouts![selPhysIdx]} behaviors={behaviors} scale={keymapScale} selectedLayerIndex={selLayer} selectedKeyPosition={selKey} onKeyPositionClicked={setSelKey} />
+            <select className="absolute top-2 right-2 h-7 rounded-lg px-2 text-xs glass border-0 outline-none cursor-pointer font-medium text-base-content/40"
+              value={keymapScale} onChange={(e) => setKeymapScale(deserializeLayoutZoom(e.target.value))}>
+              <option value="auto">自动</option><option value={0.5}>50%</option><option value={0.75}>75%</option>
+              <option value={1}>100%</option><option value={1.25}>125%</option><option value={1.5}>150%</option>
+            </select>
+          </>
+        ) : (
+          <PlaceholderKeyboard onKeyClicked={(i) => setSelKey(i)} />
         )}
       </div>
+
+      {/* ═══ 底部编辑栏 — 在键盘下方到屏幕底部的空间居中 ═══ */}
+      {selKey !== undefined && (
+        <div className="col-start-2 row-start-2 place-self-center">
+          <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-4">
+            {hasRealData && selectedBinding ? (
+              <BehaviorBindingPicker
+                binding={selectedBinding}
+                behaviors={Object.values(behaviors)}
+                layers={keymap!.layers.map(({ id, name }, li) => ({ id, name: name || li.toLocaleString() }))}
+                onBindingChanged={doUpdateBinding}
+              />
+            ) : (
+              <BehaviorBindingPicker
+                binding={{ behaviorId: 0, param1: 0, param2: 0 }}
+                behaviors={[]}
+                layers={[{ id: 0, name: "Layer 0" }]}
+                onBindingChanged={() => {}}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
