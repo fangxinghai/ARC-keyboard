@@ -48,35 +48,39 @@ export const Key = ({ selected = false, width, height, oneU, header, onClick, ch
   const pw = width * oneU - 2;
   const ph = height * oneU - 2;
   const zh = translateHeader(header);
-  // 是否是普通按键（Key Press）
-  const isKeyPress = header?.toLowerCase().includes("key") && header?.toLowerCase().includes("press");
 
   return (
     <button
       className={`
         group relative flex flex-col justify-center items-center cursor-pointer
-        rounded-xl overflow-hidden font-keycap text-center
+        rounded-xl overflow-hidden text-center
         ${selected
           ? "bg-primary text-primary-content shadow-[0_2px_8px_rgba(0,122,255,0.3)] ring-1 ring-primary/30"
           : "glass-light text-base-content shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
         }
       `}
-      style={{ width: `${pw}px`, height: `${ph}px` }}
+      style={{ width: `${pw}px`, height: `${ph}px`, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif" }}
       onClick={onClick}
     >
       {selected && <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />}
+      {/* Header: 行为类型（蓝牙/按键/瞬时层等）— 上方小字 */}
       {zh && (
-        <div className={`absolute text-[7px] ${selected ? "text-primary-content/40" : "text-base-content/20"} top-[2px] left-0 right-0 font-medium text-center truncate leading-tight px-0.5`}>
+        <div
+          className={`absolute top-[3px] left-0 right-0 text-center truncate leading-tight px-0.5 font-medium ${
+            selected ? "text-primary-content/50" : "text-base-content/25"
+          }`}
+          style={{ fontSize: Math.min(9, pw * 0.14) + "px" }}
+        >
           {zh}
         </div>
       )}
-      <div className={`w-full truncate px-1 text-center font-medium leading-tight ${
-        selected
-          ? "text-primary-content text-[11px]"
-          : isKeyPress
-            ? "text-base-content/60 text-[11px]"
-            : "text-base-content/30 text-[9px]"
-      }`}>
+      {/* Children: 具体内容（按键名/蓝牙配置等）— 居中，稍小稍淡 */}
+      <div
+        className={`w-full truncate px-1 text-center font-medium leading-tight ${
+          selected ? "text-primary-content" : "text-base-content/50"
+        }`}
+        style={{ fontSize: Math.min(13, pw * 0.22) + "px" }}
+      >
         {children}
       </div>
     </button>
