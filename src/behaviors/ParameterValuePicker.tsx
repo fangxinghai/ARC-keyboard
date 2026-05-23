@@ -1,30 +1,17 @@
 import { BehaviorParameterValueDescription } from "@zmkfirmware/zmk-studio-ts-client/behaviors";
 import { HidUsagePicker } from "./HidUsagePicker";
 
-// ─── ZMK 参数名翻译 ───
 const PARAM_NAME_ZH: Record<string, string> = {
-  "Next Profile": "下一配置",
-  "Previous Profile": "上一配置",
-  "Select Profile": "选择配置",
-  "Clear All Profiles": "清除所有配对",
-  "Clear Selected Profile": "清除当前配对",
-  "Disconnect Profile": "断开蓝牙",
-  "Toggle On/Off": "开/关",
-  "Turn On": "开启",
-  "Turn Off": "关闭",
-  "Hue Up": "色相 +",
-  "Hue Down": "色相 -",
-  "Saturation Up": "饱和度 +",
-  "Saturation Down": "饱和度 -",
-  "Brightness Up": "亮度 +",
-  "Brightness Down": "亮度 -",
-  "Speed Up": "速度 +",
-  "Speed Down": "速度 -",
-  "Next Effect": "下一灯效",
-  "Previous Effect": "上一灯效",
-  "Profile": "配置编号",
-  "USB": "USB",
-  "BLE": "蓝牙",
+  "Next Profile": "下一配置", "Previous Profile": "上一配置",
+  "Select Profile": "选择配置", "Clear All Profiles": "清除所有配对",
+  "Clear Selected Profile": "清除当前配对", "Disconnect Profile": "断开蓝牙",
+  "Toggle On/Off": "开/关", "Turn On": "开启", "Turn Off": "关闭",
+  "Hue Up": "色相+", "Hue Down": "色相-",
+  "Saturation Up": "饱和度+", "Saturation Down": "饱和度-",
+  "Brightness Up": "亮度+", "Brightness Down": "亮度-",
+  "Speed Up": "速度+", "Speed Down": "速度-",
+  "Next Effect": "下一灯效", "Previous Effect": "上一灯效",
+  "Profile": "配置编号", "USB": "USB", "BLE": "蓝牙",
 };
 
 function translateParamName(name: string): string {
@@ -48,8 +35,9 @@ export const ParameterValuePicker = ({
   if (values.length == 0) {
     return <></>;
   } else if (values.every((v) => v.constant !== undefined)) {
+    // ── 全部是常量 → 单行按钮 ──
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5 justify-center">
         {values.map((v) => {
           const isActive = value === v.constant;
           const zhName = translateParamName(v.name);
@@ -57,16 +45,13 @@ export const ParameterValuePicker = ({
             <button
               key={v.constant}
               onClick={() => onValueChanged(v.constant)}
-              className={`flex flex-col items-center justify-center rounded-xl text-xs min-h-[42px] px-4 py-1.5 cursor-pointer transition-all duration-150 ease-out ${
+              className={`inline-flex items-center gap-1 rounded-lg text-[11px] px-3 py-1.5 cursor-pointer whitespace-nowrap ${
                 isActive
-                  ? "bg-primary text-white font-semibold shadow-[0_2px_8px_rgba(0,122,255,0.3)]"
-                  : "glass-light text-base-content/60 hover:text-base-content/90 active:scale-[0.97]"
+                  ? "bg-primary text-white font-semibold shadow-[0_2px_6px_rgba(0,122,255,0.25)]"
+                  : "glass-light text-base-content/55 hover:text-base-content/80"
               }`}
             >
-              <span className="font-medium">{zhName}</span>
-              {zhName !== v.name && (
-                <span className={`text-[9px] mt-0.5 ${isActive ? "opacity-60" : "opacity-25"}`}>{v.name}</span>
-              )}
+              {zhName}
             </button>
           );
         })}
@@ -74,15 +59,16 @@ export const ParameterValuePicker = ({
     );
   } else if (values.length == 1) {
     if (values[0].range) {
+      // ── 数字范围 → 内联输入 ──
       return (
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-base-content/50 font-medium">{translateParamName(values[0].name)}:</label>
+        <div className="inline-flex items-center gap-1.5">
+          <label className="text-[11px] text-base-content/45 font-medium">{translateParamName(values[0].name)}:</label>
           <input
             type="number"
             min={values[0].range.min}
             max={values[0].range.max}
             value={value}
-            className="h-9 w-20 rounded-xl glass border-0 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/30 text-center font-medium text-base-content/70"
+            className="h-7 w-14 rounded-lg glass border-0 px-2 text-[11px] outline-none focus:ring-2 focus:ring-primary/30 text-center font-medium text-base-content/70"
             onChange={(e) => onValueChanged(parseInt(e.target.value))}
           />
         </div>
@@ -101,11 +87,11 @@ export const ParameterValuePicker = ({
       );
     } else if (values[0].layerId) {
       return (
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-base-content/50 font-medium">{translateParamName(values[0].name)}:</label>
+        <div className="inline-flex items-center gap-1.5">
+          <label className="text-[11px] text-base-content/45 font-medium">{translateParamName(values[0].name)}:</label>
           <select
             value={value}
-            className="h-9 rounded-xl glass border-0 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/30 font-medium text-base-content/70 appearance-none"
+            className="h-7 rounded-lg glass border-0 px-2 text-[11px] outline-none focus:ring-2 focus:ring-primary/30 font-medium text-base-content/70 appearance-none"
             onChange={(e) => onValueChanged(parseInt(e.target.value))}
           >
             {layers.map(({ name, id }) => (
@@ -117,7 +103,7 @@ export const ParameterValuePicker = ({
     }
   } else {
     console.log("Not sure how to handle", values);
-    return <p className="text-xs text-base-content/30">复合参数</p>;
+    return <p className="text-[11px] text-base-content/30">复合参数</p>;
   }
   return <></>;
 };
