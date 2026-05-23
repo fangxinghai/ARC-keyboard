@@ -33,14 +33,14 @@ function useBehaviors(): BehaviorMap {
       if (!connection.conn) return;
       let behavior_list = await call_rpc(connection.conn, { behaviors: { listAllBehaviors: true } });
       if (!ignore) {
-        let behavior_map: BehaviorMap = {};
-        for (let behaviorId of behavior_list.behaviors?.listAllBehaviors?.behaviors || []) {
+        let bm: BehaviorMap = {};
+        for (let bid of behavior_list.behaviors?.listAllBehaviors?.behaviors || []) {
           if (ignore) break;
-          let behavior_details = await call_rpc(connection.conn, { behaviors: { getBehaviorDetails: { behaviorId } } });
-          let dets = behavior_details?.behaviors?.getBehaviorDetails;
-          if (dets) behavior_map[dets.id] = dets;
+          let bd = await call_rpc(connection.conn, { behaviors: { getBehaviorDetails: { behaviorId: bid } } });
+          let d = bd?.behaviors?.getBehaviorDetails;
+          if (d) bm[d.id] = d;
         }
-        if (!ignore) setBehaviors(behavior_map);
+        if (!ignore) setBehaviors(bm);
       }
     }
     let ignore = false; startRequest();
@@ -68,54 +68,41 @@ function useLayouts(): [PhysicalLayout[] | undefined, React.Dispatch<SetStateAct
   return [layouts, setLayouts, idx, setIdx];
 }
 
-// ─── 未连接时的占位键盘 ───
 function PlaceholderKeyboard({ onKeyClicked }: { onKeyClicked?: (i: number) => void }) {
-  // 模拟一个 4x2 + 2旋钮 的布局
-  const rows = [
-    [0, 1, 2],
-    [3, 4, 5],
-  ];
   const oneU = 80;
   return (
     <div className="flex flex-col items-center gap-6 py-8">
-      <div className="flex gap-8 items-start">
-        {/* 按键区 */}
+      <div className="flex gap-6 items-start">
         <div className="relative">
-          <div className="rounded-2xl border border-base-content/8 p-2">
+          <div className="group-frame p-3">
             <div className="flex flex-col gap-1">
-              {rows.map((row, ri) => (
+              {[[0,1,2],[3,4,5]].map((row, ri) => (
                 <div key={ri} className="flex gap-1">
                   {row.map((idx) => (
                     <div key={idx} onClick={() => onKeyClicked?.(idx)}>
-                      <Key oneU={oneU} width={1} height={1} selected={false}>
-                        <span className="text-base-content/15 text-[10px]"></span>
-                      </Key>
+                      <Key oneU={oneU} width={1} height={1} selected={false}><span></span></Key>
                     </div>
                   ))}
                 </div>
               ))}
             </div>
           </div>
-          <span className="block text-center text-[10px] text-base-content/25 font-medium mt-1.5">按键</span>
+          <span className="block text-center text-[10px] font-medium mt-2" style={{ color: "light-dark(rgba(0,0,0,0.2), rgba(255,255,255,0.25))" }}>按键</span>
         </div>
-
-        {/* 旋钮区 */}
         <div className="relative">
-          <div className="rounded-2xl border border-base-content/8 p-2">
+          <div className="group-frame p-3">
             <div className="flex flex-col gap-1">
-              {[6, 7].map((idx) => (
+              {[6,7].map((idx) => (
                 <div key={idx} onClick={() => onKeyClicked?.(idx)}>
-                  <Key oneU={oneU} width={1} height={1} selected={false}>
-                    <span className="text-base-content/15 text-[10px]"></span>
-                  </Key>
+                  <Key oneU={oneU} width={1} height={1} selected={false}><span></span></Key>
                 </div>
               ))}
             </div>
           </div>
-          <span className="block text-center text-[10px] text-base-content/25 font-medium mt-1.5">旋钮</span>
+          <span className="block text-center text-[10px] font-medium mt-2" style={{ color: "light-dark(rgba(0,0,0,0.2), rgba(255,255,255,0.25))" }}>旋钮</span>
         </div>
       </div>
-      <p className="text-xs text-base-content/25">连接键盘后显示真实布局</p>
+      <p className="text-xs text-base-content/20">连接键盘后显示真实布局</p>
     </div>
   );
 }
@@ -234,7 +221,6 @@ export default function Keyboard() {
     if (selLayer > keymap.layers.length - 1) setSelLayer(keymap.layers.length - 1);
   }, [keymap, selLayer]);
 
-  // ─── 是否有真实数据 ───
   const hasRealData = !!(layouts && keymap && Object.keys(behaviors).length > 0);
 
   return (
@@ -276,10 +262,10 @@ export default function Keyboard() {
         )}
       </div>
 
-      {/* 底部面板 — 居中 + 宽度自适应 */}
+      {/* ═══ 底部面板 — 垂直居中于键盘和屏幕底部之间 ═══ */}
       {selKey !== undefined && (
-        <div className="col-start-2 row-start-2 flex justify-center">
-          <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-4 w-full max-w-4xl transition-all duration-400 ease-out">
+        <div className="col-start-2 row-start-2 flex justify-center items-center py-3">
+          <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-4 w-full max-w-4xl transition-[height] duration-300 ease-out">
             {hasRealData && selectedBinding ? (
               <BehaviorBindingPicker
                 binding={selectedBinding}
@@ -292,11 +278,7 @@ export default function Keyboard() {
                 binding={{ behaviorId: 0, param1: 0, param2: 0 }}
                 behaviors={[]}
                 layers={[{ id: 0, name: "Layer 0" }]}
-                onBindingChanged={() => {
-                  if (!isConnected) {
-                    // 提示用户连接
-                  }
-                }}
+                onBindingChanged={() => {}}
               />
             )}
           </div>
