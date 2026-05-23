@@ -99,10 +99,7 @@ export const PhysicalLayout = ({
             width: (bounds.maxX - bounds.minX) * oneU + pad * 2,
             height: (bounds.maxY - bounds.minY) * oneU + pad * 2,
           }}>
-            <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-medium whitespace-nowrap"
-              style={{ color: "light-dark(rgba(0,0,0,0.2), rgba(255,255,255,0.25))" }}>
-              {isEncoder ? "旋钮" : "按键"}
-            </span>
+        
           </div>
         );
       })}
