@@ -16,7 +16,7 @@ import { BehaviorBindingPicker } from "../behaviors/BehaviorBindingPicker";
 import { produce } from "immer";
 import { LockStateContext } from "../rpc/LockStateContext";
 import { LockState } from "@zmkfirmware/zmk-studio-ts-client/core";
-import { deserializeLayoutZoom, LayoutZoom, PhysicalLayout as PhysicalLayoutComp } from "./PhysicalLayout";
+import { deserializeLayoutZoom, LayoutZoom } from "./PhysicalLayout";
 import { useLocalStorageState } from "../misc/useLocalStorageState";
 import { Key } from "./Key";
 
