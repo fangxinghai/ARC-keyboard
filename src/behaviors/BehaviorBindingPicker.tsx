@@ -173,12 +173,6 @@ function findKeyLabel(h: number): string | undefined {
   return undefined;
 }
 
-// ─── 蓝牙中文映射（用于显示，实际参数由 BehaviorParametersPicker 处理）───
-const BT_ZH: Record<string, string> = {
-  "Next Profile": "下一配置", "Previous Profile": "上一配置",
-  "Select Profile": "选择配置", "Clear All Profiles": "清除所有配对",
-  "Clear Selected Profile": "清除当前配对", "Disconnect Profile": "断开连接",
-};
 
 export const BehaviorBindingPicker = ({
   binding, layers, behaviors, onBindingChanged,
