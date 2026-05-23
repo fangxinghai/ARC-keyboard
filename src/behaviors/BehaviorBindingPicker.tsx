@@ -118,16 +118,6 @@ const SPECIAL_KEYS: QuickKey[] = [
   { label: "KP .", page: 7, id: 0x63 },
 ];
 
-interface LightButton { zh: string; en: string; paramValue: number; }
-const RGB_BUTTONS: LightButton[] = [
-  { zh: "RGB 开/关", en: "Toggle", paramValue: 0 }, { zh: "RGB 开启", en: "On", paramValue: 1 },
-  { zh: "RGB 关闭", en: "Off", paramValue: 2 }, { zh: "色相 +", en: "Hue Up", paramValue: 3 },
-  { zh: "色相 -", en: "Hue Down", paramValue: 4 }, { zh: "饱和度 +", en: "Sat Up", paramValue: 5 },
-  { zh: "饱和度 -", en: "Sat Down", paramValue: 6 }, { zh: "亮度 +", en: "Bri Up", paramValue: 7 },
-  { zh: "亮度 -", en: "Bri Down", paramValue: 8 }, { zh: "速度 +", en: "Spd Up", paramValue: 9 },
-  { zh: "速度 -", en: "Spd Down", paramValue: 10 }, { zh: "下一灯效", en: "Next Eff", paramValue: 11 },
-  { zh: "上一灯效", en: "Prev Eff", paramValue: 12 },
-];
 
 const LAYER_NAMES: Record<string, string> = {
   "Momentary Layer": "瞬时层 (MO)", "Layer Tap": "层/按键 (LT)",
@@ -233,7 +223,6 @@ export const BehaviorBindingPicker = ({
   const handleDirectBind = (beh: GetBehaviorDetailsResponse | undefined, pv: number) => {
     if (!beh) return; setBehaviorId(beh.id); setParam1(pv); setParam2(0);
   };
-  const handleSelectBehavior = (bid: number) => { setBehaviorId(bid); setParam1(0); setParam2(0); };
 
   const isKeyActive = useCallback((page: number, id: number): boolean => {
     if (!keyPressBehavior || behaviorId !== keyPressBehavior.id) return false;
