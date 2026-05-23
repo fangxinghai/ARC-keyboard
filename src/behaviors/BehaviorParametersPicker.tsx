@@ -16,7 +16,7 @@ export const BehaviorParametersPicker = ({
 }: BehaviorParametersPickerProps) => {
   if (param1 === undefined) {
     return (
-      <div className="flex flex-col gap-2 items-center">
+      <div className="flex flex-wrap gap-2 items-center justify-center">
         <ParameterValuePicker
           values={metadata.flatMap((m) => m.param1)}
           onValueChanged={onParam1Changed}
@@ -29,7 +29,7 @@ export const BehaviorParametersPicker = ({
       validateValue(layers.map((l) => l.id), param1, s.param1)
     );
     return (
-      <div className="flex flex-col gap-3 items-center">
+      <div className="flex flex-wrap gap-2 items-center justify-center">
         <ParameterValuePicker
           values={metadata.flatMap((m) => m.param1)}
           value={param1}
