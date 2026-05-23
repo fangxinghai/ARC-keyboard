@@ -12,7 +12,15 @@ const ZH: Record<string, string> = {
   "Speed Up": "速度+", "Speed Down": "速度-",
   "Next Effect": "下一灯效", "Previous Effect": "上一灯效",
   "Profile": "配置", "USB": "USB", "BLE": "蓝牙",
+  "Toggle": "开/关", "On": "开启", "Off": "关闭",
+  "Hue Increase": "色相+", "Hue Decrease": "色相-",
+  "Saturation Increase": "饱和度+", "Saturation Decrease": "饱和度-",
+  "Brightness Increase": "亮度+", "Brightness Decrease": "亮度-",
+  "Speed Increase": "速度+", "Speed Decrease": "速度-",
+  "Effect Next": "下一灯效", "Effect Previous": "上一灯效",
+  "Color": "颜色", "Cycle": "循环",
 };
+
 
 function tr(n: string): string {
   if (ZH[n]) return ZH[n];
