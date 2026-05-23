@@ -17,10 +17,7 @@ export interface BehaviorBindingPickerProps {
 }
 
 function validateBinding(
-  metadata: BehaviorBindingParametersSet[],
-  layerIds: number[],
-  param1?: number,
-  param2?: number
+  metadata: BehaviorBindingParametersSet[], layerIds: number[], param1?: number, param2?: number
 ): boolean {
   if ((param1 === undefined || param1 === 0) && metadata.every((s) => !s.param1 || s.param1.length === 0)) return true;
   let matchingSet = metadata.find((s) => validateValue(layerIds, param1, s.param1));
@@ -102,20 +99,13 @@ const KEYBOARD_ROWS = [ROW_ESC, ROW_NUM, ROW_TAB, ROW_CAPS, ROW_SHIFT, ROW_CTRL]
 
 interface MediaKey { label: string; zh: string; page: number; id: number; }
 const MEDIA_KEYS: MediaKey[] = [
-  { label: "Vol+", zh: "音量+", page: 12, id: 0xe9 },
-  { label: "Vol-", zh: "音量-", page: 12, id: 0xea },
-  { label: "Mute", zh: "静音", page: 12, id: 0xe2 },
-  { label: "Next", zh: "下一曲", page: 12, id: 0xb5 },
-  { label: "Prev", zh: "上一曲", page: 12, id: 0xb6 },
-  { label: "Play", zh: "播放/暂停", page: 12, id: 0xcd },
-  { label: "Stop", zh: "停止", page: 12, id: 0xb7 },
-  { label: "Bri+", zh: "亮度+", page: 12, id: 0x6f },
-  { label: "Bri-", zh: "亮度-", page: 12, id: 0x70 },
-  { label: "Calc", zh: "计算器", page: 12, id: 0x192 },
-  { label: "Web", zh: "浏览器", page: 12, id: 0x196 },
-  { label: "Mail", zh: "邮件", page: 12, id: 0x18a },
+  { label: "Vol+", zh: "音量+", page: 12, id: 0xe9 }, { label: "Vol-", zh: "音量-", page: 12, id: 0xea },
+  { label: "Mute", zh: "静音", page: 12, id: 0xe2 }, { label: "Next", zh: "下一曲", page: 12, id: 0xb5 },
+  { label: "Prev", zh: "上一曲", page: 12, id: 0xb6 }, { label: "Play", zh: "播放/暂停", page: 12, id: 0xcd },
+  { label: "Stop", zh: "停止", page: 12, id: 0xb7 }, { label: "Bri+", zh: "亮度+", page: 12, id: 0x6f },
+  { label: "Bri-", zh: "亮度-", page: 12, id: 0x70 }, { label: "Calc", zh: "计算器", page: 12, id: 0x192 },
+  { label: "Web", zh: "浏览器", page: 12, id: 0x196 }, { label: "Mail", zh: "邮件", page: 12, id: 0x18a },
 ];
-
 const SPECIAL_KEYS: QuickKey[] = [
   { label: "NumLk", page: 7, id: 0x53 }, { label: "KP /", page: 7, id: 0x54 },
   { label: "KP *", page: 7, id: 0x55 }, { label: "KP -", page: 7, id: 0x56 },
@@ -137,21 +127,6 @@ const RGB_BUTTONS: LightButton[] = [
   { zh: "亮度 -", en: "Bri Down", paramValue: 8 }, { zh: "速度 +", en: "Spd Up", paramValue: 9 },
   { zh: "速度 -", en: "Spd Down", paramValue: 10 }, { zh: "下一灯效", en: "Next Eff", paramValue: 11 },
   { zh: "上一灯效", en: "Prev Eff", paramValue: 12 },
-];
-
-// ─── 蓝牙按钮：点击直接改键（behaviorId + param1 写入） ───
-interface BtAction { zh: string; desc: string; paramValue: number; }
-const BT_ACTIONS: BtAction[] = [
-  { zh: "下一个配置", desc: "切换到下一个蓝牙配置", paramValue: 0 },
-  { zh: "上一个配置", desc: "切换到上一个蓝牙配置", paramValue: 1 },
-  { zh: "选择配置 0", desc: "切换到蓝牙设备 0", paramValue: 2 },
-  { zh: "选择配置 1", desc: "切换到蓝牙设备 1", paramValue: 3 },
-  { zh: "选择配置 2", desc: "切换到蓝牙设备 2", paramValue: 4 },
-  { zh: "选择配置 3", desc: "切换到蓝牙设备 3", paramValue: 5 },
-  { zh: "选择配置 4", desc: "切换到蓝牙设备 4", paramValue: 6 },
-  { zh: "清除当前配对", desc: "清除当前配置的配对信息", paramValue: 7 },
-  { zh: "清除所有配对", desc: "清除全部配对信息", paramValue: 8 },
-  { zh: "断开连接", desc: "断开当前蓝牙连接", paramValue: 9 },
 ];
 
 const LAYER_NAMES: Record<string, string> = {
@@ -183,7 +158,7 @@ function matchName(name: string, map: Record<string, string>): string {
 
 const MODIFIER_HID_IDS: Record<number, number> = { 0xe0:0x01, 0xe1:0x02, 0xe2:0x04, 0xe3:0x08, 0xe4:0x10, 0xe5:0x20, 0xe6:0x40, 0xe7:0x80 };
 function isModifierKey(key: QuickKey): boolean { return key.page === 7 && key.id >= 0xe0 && key.id <= 0xe7; }
-function getModFlag(hidId: number): number { return MODIFIER_HID_IDS[hidId] || 0; }
+function getModFlag(h: number): number { return MODIFIER_HID_IDS[h] || 0; }
 function extractModFlags(p: number): number { return (p >> 24) & 0xff; }
 function extractBaseUsage(p: number): number { return p & 0x00ffffff; }
 function buildParam1(m: number, b: number): number { return ((m & 0xff) << 24) | (b & 0x00ffffff); }
@@ -193,10 +168,17 @@ function modFlagsToLabels(f: number): string[] {
   if(f&0x10)l.push("RCtrl");if(f&0x20)l.push("RShift");if(f&0x40)l.push("RAlt");if(f&0x80)l.push("RGUI");
   return l;
 }
-function findKeyLabel(hidId: number): string | undefined {
-  for (const row of KEYBOARD_ROWS) { const f = row.find((k) => k.page === 7 && k.id === hidId); if (f) return f.label; }
+function findKeyLabel(h: number): string | undefined {
+  for (const row of KEYBOARD_ROWS) { const f = row.find((k) => k.page === 7 && k.id === h); if (f) return f.label; }
   return undefined;
 }
+
+// ─── 蓝牙中文映射（用于显示，实际参数由 BehaviorParametersPicker 处理）───
+const BT_ZH: Record<string, string> = {
+  "Next Profile": "下一配置", "Previous Profile": "上一配置",
+  "Select Profile": "选择配置", "Clear All Profiles": "清除所有配对",
+  "Clear Selected Profile": "清除当前配对", "Disconnect Profile": "断开连接",
+};
 
 export const BehaviorBindingPicker = ({
   binding, layers, behaviors, onBindingChanged,
@@ -208,32 +190,31 @@ export const BehaviorBindingPicker = ({
 
   const tabsRef = useRef<HTMLDivElement>(null);
   const [capsuleStyle, setCapsuleStyle] = useState({ left: 0, width: 0 });
-
   const updateCapsule = useCallback(() => {
-    const container = tabsRef.current;
-    if (!container) return;
-    const el = container.querySelector(`[data-tab="${activeCategory}"]`) as HTMLElement;
+    const c = tabsRef.current; if (!c) return;
+    const el = c.querySelector(`[data-tab="${activeCategory}"]`) as HTMLElement;
     if (!el) return;
     setCapsuleStyle({ left: el.offsetLeft, width: el.offsetWidth });
   }, [activeCategory]);
-
   useLayoutEffect(updateCapsule, [updateCapsule]);
   useEffect(() => { window.addEventListener("resize", updateCapsule); return () => window.removeEventListener("resize", updateCapsule); }, [updateCapsule]);
 
   const contentRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const el = contentRef.current;
-    if (!el) return;
+    const el = contentRef.current; if (!el) return;
     const oldH = el.offsetHeight;
     el.style.height = "auto";
     requestAnimationFrame(() => {
       const newH = el.scrollHeight;
       if (Math.abs(oldH - newH) > 2) {
         el.style.height = oldH + "px";
+        // 用 double-rAF 保证浏览器先渲染旧高度
         requestAnimationFrame(() => {
-          el.style.height = newH + "px";
-          const onEnd = () => { el.style.height = "auto"; el.removeEventListener("transitionend", onEnd); };
-          el.addEventListener("transitionend", onEnd, { once: true });
+          requestAnimationFrame(() => {
+            el.style.height = newH + "px";
+            const onEnd = () => { el.style.height = "auto"; el.removeEventListener("transitionend", onEnd); };
+            el.addEventListener("transitionend", onEnd, { once: true });
+          });
         });
       }
     });
@@ -249,6 +230,9 @@ export const BehaviorBindingPicker = ({
   const layerBehaviors = useMemo(() => behaviors.filter((b) => { const n = b.displayName.toLowerCase(); return n.includes("layer") || n.includes("momentary") || n.includes("conditional"); }), [behaviors]);
   const otherBehaviors = useMemo(() => behaviors.filter((b) => { const n = b.displayName.toLowerCase(); const skip = (n.includes("key") && n.includes("press")) || n.includes("rgb") || n.includes("underglow") || n.includes("backlight") || (n.includes("ext") && n.includes("power")) || n.includes("layer") || n.includes("momentary") || n.includes("conditional") || n.includes("macro") || n.includes("bluetooth") || n === "bt"; return !skip; }), [behaviors]);
   const macroBehaviors = useMemo(() => behaviors.filter((b) => b.displayName.toLowerCase().includes("macro")), [behaviors]);
+
+  // 蓝牙 behavior 的 metadata
+  const btMetadata = useMemo(() => btBehavior ? behaviors.find((b) => b.id === btBehavior.id)?.metadata : undefined, [btBehavior, behaviors]);
 
   useEffect(() => {
     if (binding.behaviorId === behaviorId && binding.param1 === param1 && binding.param2 === param2) return;
@@ -266,19 +250,17 @@ export const BehaviorBindingPicker = ({
   const handleQuickKey = useCallback((page: number, id: number) => {
     if (!keyPressBehavior) return;
     if (page === 7 && isModifierKey({ label: "", page, id })) {
-      const newFlags = currentModFlags ^ getModFlag(id);
-      setBehaviorId(keyPressBehavior.id); setParam1(buildParam1(newFlags, currentBaseUsage)); setParam2(0);
+      const nf = currentModFlags ^ getModFlag(id);
+      setBehaviorId(keyPressBehavior.id); setParam1(buildParam1(nf, currentBaseUsage)); setParam2(0);
     } else {
-      const baseUsage = hid_usage_from_page_and_id(page, id);
-      const preservedMods = (behaviorId === keyPressBehavior.id) ? currentModFlags : 0;
-      setBehaviorId(keyPressBehavior.id); setParam1(buildParam1(preservedMods, baseUsage)); setParam2(0);
+      const bu = hid_usage_from_page_and_id(page, id);
+      const pm = (behaviorId === keyPressBehavior.id) ? currentModFlags : 0;
+      setBehaviorId(keyPressBehavior.id); setParam1(buildParam1(pm, bu)); setParam2(0);
     }
   }, [keyPressBehavior, behaviorId, currentModFlags, currentBaseUsage]);
 
-  // 蓝牙/灯光：点击直接写入 behaviorId + param
   const handleDirectBind = (beh: GetBehaviorDetailsResponse | undefined, pv: number) => {
-    if (!beh) return;
-    setBehaviorId(beh.id); setParam1(pv); setParam2(0);
+    if (!beh) return; setBehaviorId(beh.id); setParam1(pv); setParam2(0);
   };
   const handleSelectBehavior = (bid: number) => { setBehaviorId(bid); setParam1(0); setParam2(0); };
 
@@ -291,32 +273,33 @@ export const BehaviorBindingPicker = ({
   const comboDescription = useMemo(() => {
     if (!keyPressBehavior || behaviorId !== keyPressBehavior.id) return null;
     const mods = modFlagsToLabels(currentModFlags);
-    const baseLabel = currentBaseHidId ? findKeyLabel(currentBaseHidId) : null;
-    if (mods.length === 0 && !baseLabel) return null;
-    return [...mods, ...(baseLabel ? [baseLabel] : [])].join(" + ");
+    const bl = currentBaseHidId ? findKeyLabel(currentBaseHidId) : null;
+    if (mods.length === 0 && !bl) return null;
+    return [...mods, ...(bl ? [bl] : [])].join(" + ");
   }, [behaviorId, keyPressBehavior, currentModFlags, currentBaseHidId]);
 
   const keyBtn = (active: boolean, isMod: boolean, extra = "") => {
-    if (active && isMod) return `flex items-center justify-center rounded-[10px] text-[11px] font-semibold text-white bg-accent shadow-[0_2px_8px_rgba(255,149,0,0.3)] ring-1 ring-accent/30 transition-all duration-150 ${extra}`;
-    if (active) return `flex items-center justify-center rounded-[10px] text-[11px] font-semibold text-white bg-primary shadow-[0_2px_8px_rgba(0,122,255,0.3)] transition-all duration-150 ${extra}`;
-    if (isMod) return `flex items-center justify-center rounded-[10px] text-[11px] font-medium glass-light text-base-content/60 hover:text-base-content/90 active:scale-95 transition-all duration-150 bg-accent/5 ${extra}`;
-    return `flex items-center justify-center rounded-[10px] text-[11px] font-medium glass-light text-base-content/60 hover:text-base-content/90 active:scale-95 transition-all duration-150 ${extra}`;
+    if (active && isMod) return `flex items-center justify-center rounded-[10px] text-[11px] font-semibold text-white bg-accent shadow-[0_2px_8px_rgba(255,149,0,0.3)] ring-1 ring-accent/30 transition-all duration-150 ease-out ${extra}`;
+    if (active) return `flex items-center justify-center rounded-[10px] text-[11px] font-semibold text-white bg-primary shadow-[0_2px_8px_rgba(0,122,255,0.3)] transition-all duration-150 ease-out ${extra}`;
+    if (isMod) return `flex items-center justify-center rounded-[10px] text-[11px] font-medium glass-light text-base-content/60 hover:text-base-content/90 active:scale-[0.97] transition-all duration-150 ease-out bg-accent/5 ${extra}`;
+    return `flex items-center justify-center rounded-[10px] text-[11px] font-medium glass-light text-base-content/60 hover:text-base-content/90 active:scale-[0.97] transition-all duration-150 ease-out ${extra}`;
   };
 
   const cardBtn = (active: boolean) =>
-    `flex flex-col items-center justify-center rounded-xl text-xs min-h-[46px] px-3 py-1.5 cursor-pointer transition-all duration-150 ${
+    `flex flex-col items-center justify-center rounded-xl text-xs min-h-[46px] px-3 py-1.5 cursor-pointer transition-all duration-150 ease-out ${
       active ? "bg-primary text-white font-semibold shadow-[0_2px_8px_rgba(0,122,255,0.3)]"
-             : "glass-light text-base-content/60 hover:text-base-content/90 active:scale-95"
+             : "glass-light text-base-content/60 hover:text-base-content/90 active:scale-[0.97]"
     }`;
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
+      {/* ═══ Tab 栏 ═══ */}
+      <div className="flex items-center justify-center gap-2 flex-wrap">
         <div ref={tabsRef} className="relative flex gap-0.5 p-1 rounded-2xl glass">
           <div className="absolute top-1 bottom-1 rounded-xl bg-primary tab-capsule pointer-events-none" style={{ left: capsuleStyle.left, width: capsuleStyle.width }} />
           {CATEGORIES.map((cat) => (
             <button key={cat.id} data-tab={cat.id} onClick={() => setActiveCategory(cat.id)}
-              className={`relative z-10 flex items-center gap-1 px-3 py-1.5 text-xs rounded-xl transition-colors duration-200 ${
+              className={`relative z-10 flex items-center gap-1 px-3 py-1.5 text-xs rounded-xl transition-colors duration-200 ease-out ${
                 activeCategory === cat.id ? "text-white font-semibold" : "text-base-content/45 hover:text-base-content/70"
               }`}>
               {cat.icon && <Bluetooth className="w-3 h-3" />}
@@ -325,7 +308,7 @@ export const BehaviorBindingPicker = ({
           ))}
         </div>
         {comboDescription && activeCategory === "keyboard" && (
-          <div className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-xl glass panel-fade-enter">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass panel-fade-enter">
             <span className="text-[10px] text-base-content/35">当前：</span>
             <span className="text-xs font-semibold text-primary">{comboDescription}</span>
             {currentModFlags !== 0 && (
@@ -336,7 +319,8 @@ export const BehaviorBindingPicker = ({
         )}
       </div>
 
-      <div ref={contentRef} className="overflow-hidden transition-[height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+      {/* ═══ 面板内容 ═══ */}
+      <div ref={contentRef} className="overflow-hidden transition-[height] duration-350 ease-out">
 
         {activeCategory === "keyboard" && (
           <div className="panel-fade-enter flex justify-center">
@@ -387,28 +371,42 @@ export const BehaviorBindingPicker = ({
           </div>
         )}
 
-        {/* ═══ 蓝牙 — 直接点击改键 ═══ */}
+        {/* ═══ 蓝牙 — 使用 ZMK 原版参数系统 ═══ */}
         {activeCategory === "bluetooth" && (
-          <div className="panel-fade-enter">
+          <div className="flex flex-col gap-3 panel-fade-enter">
             {btBehavior ? (
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-2">
-                {BT_ACTIONS.map((action) => {
-                  const isActive = behaviorId === btBehavior.id && param1 === action.paramValue;
-                  return (
-                    <button key={action.paramValue}
-                      onClick={() => handleDirectBind(btBehavior, action.paramValue)}
-                      className={cardBtn(isActive)}>
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <Bluetooth className="w-3.5 h-3.5 shrink-0" />
-                        {action.zh}
-                      </span>
-                      <span className={`text-[9px] mt-0.5 leading-tight ${isActive ? "opacity-70" : "opacity-30"}`}>
-                        {action.desc}
-                      </span>
+              <>
+                <p className="text-xs text-base-content/40 font-medium flex items-center gap-1.5 justify-center">
+                  <Bluetooth className="w-3.5 h-3.5" /> 选择蓝牙操作绑定到当前按键
+                </p>
+                {/* 先选中蓝牙 behavior */}
+                {behaviorId !== btBehavior.id && (
+                  <div className="flex justify-center">
+                    <button onClick={() => { setBehaviorId(btBehavior.id); setParam1(0); setParam2(0); }}
+                      className="btn-apple px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium">
+                      <Bluetooth className="w-4 h-4 mr-1.5" /> 设为蓝牙功能
                     </button>
-                  );
-                })}
-              </div>
+                  </div>
+                )}
+                {/* 使用 ZMK 原版参数选择器 */}
+                {behaviorId === btBehavior.id && btMetadata && (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-full max-w-md">
+                      <BehaviorParametersPicker
+                        metadata={btMetadata}
+                        param1={param1}
+                        param2={param2}
+                        layers={layers}
+                        onParam1Changed={setParam1}
+                        onParam2Changed={setParam2}
+                      />
+                    </div>
+                  </div>
+                )}
+                {behaviorId === btBehavior.id && (
+                  <p className="text-[10px] text-base-content/30 text-center">已选择蓝牙功能，请在上方选择具体操作</p>
+                )}
+              </>
             ) : (
               <div className="glass rounded-2xl p-5 text-center text-sm text-base-content/40">固件中未启用蓝牙功能</div>
             )}
@@ -425,8 +423,7 @@ export const BehaviorBindingPicker = ({
                     <button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={cardBtn(behaviorId === b.id)}>
                       <span className="font-medium leading-tight">{zh}</span>
                       {zh !== b.displayName && <span className={`text-[9px] mt-0.5 ${behaviorId === b.id ? "opacity-70" : "opacity-30"}`}>{b.displayName}</span>}
-                    </button>
-                  ); })}
+                    </button>); })}
                 </div>
                 {metadata && layerBehaviors.some((b) => b.id === behaviorId) && (
                   <div className="mt-3"><BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} /></div>
@@ -440,8 +437,7 @@ export const BehaviorBindingPicker = ({
                   <button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={cardBtn(behaviorId === b.id)}>
                     <span className="font-medium leading-tight">{zh}</span>
                     {zh !== b.displayName && <span className={`text-[9px] mt-0.5 ${behaviorId === b.id ? "opacity-70" : "opacity-30"}`}>{b.displayName}</span>}
-                  </button>
-                ); })}
+                  </button>); })}
               </div>
               {metadata && otherBehaviors.some((b) => b.id === behaviorId) && (
                 <div className="mt-3"><BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} /></div>
@@ -455,19 +451,19 @@ export const BehaviorBindingPicker = ({
             {underglowBehavior ? (
               <><p className="text-xs text-base-content/40 font-medium">RGB 灯效控制</p>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(105px,1fr))] gap-2">
-                {RGB_BUTTONS.map((btn) => { const isActive = behaviorId === underglowBehavior.id && param1 === btn.paramValue; return (
-                  <button key={btn.paramValue} onClick={() => handleDirectBind(underglowBehavior, btn.paramValue)} className={cardBtn(isActive)}>
-                    <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${isActive ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
+                {RGB_BUTTONS.map((btn) => { const a = behaviorId === underglowBehavior.id && param1 === btn.paramValue; return (
+                  <button key={btn.paramValue} onClick={() => handleDirectBind(underglowBehavior, btn.paramValue)} className={cardBtn(a)}>
+                    <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${a ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
                   </button>); })}
               </div></>
-            ) : (<div className="glass rounded-2xl p-5 text-center text-sm text-base-content/40">固件中未启用 RGB 灯效功能</div>)}
+            ) : (<div className="glass rounded-2xl p-5 text-center text-sm text-base-content/40">固件中未启用 RGB</div>)}
             {backlightBehavior && (
               <><p className="text-xs text-base-content/40 mt-1 font-medium">背光控制</p>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(105px,1fr))] gap-2">
-                {[{zh:"背光 开/关",en:"Toggle",pv:0},{zh:"背光 开",en:"On",pv:1},{zh:"背光 关",en:"Off",pv:2},{zh:"背光 亮度+",en:"Bri Up",pv:3},{zh:"背光 亮度-",en:"Bri Down",pv:4},{zh:"背光 循环",en:"Cycle",pv:5}].map((btn) => {
-                  const isActive = behaviorId === backlightBehavior.id && param1 === btn.pv; return (
-                  <button key={btn.pv} onClick={() => handleDirectBind(backlightBehavior, btn.pv)} className={cardBtn(isActive)}>
-                    <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${isActive ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
+                {[{zh:"背光 开/关",en:"Toggle",pv:0},{zh:"背光 开",en:"On",pv:1},{zh:"背光 关",en:"Off",pv:2},{zh:"亮度+",en:"Bri Up",pv:3},{zh:"亮度-",en:"Bri Down",pv:4},{zh:"循环",en:"Cycle",pv:5}].map((btn) => {
+                  const a = behaviorId === backlightBehavior.id && param1 === btn.pv; return (
+                  <button key={btn.pv} onClick={() => handleDirectBind(backlightBehavior, btn.pv)} className={cardBtn(a)}>
+                    <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${a ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
                   </button>); })}
               </div></>
             )}
@@ -475,9 +471,9 @@ export const BehaviorBindingPicker = ({
               <><p className="text-xs text-base-content/40 mt-1 font-medium">外部电源</p>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(105px,1fr))] gap-2">
                 {[{zh:"电源 开/关",en:"Toggle",pv:0},{zh:"电源 开",en:"On",pv:1},{zh:"电源 关",en:"Off",pv:2}].map((btn) => {
-                  const isActive = behaviorId === extPowerBehavior.id && param1 === btn.pv; return (
-                  <button key={btn.pv} onClick={() => handleDirectBind(extPowerBehavior, btn.pv)} className={cardBtn(isActive)}>
-                    <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${isActive ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
+                  const a = behaviorId === extPowerBehavior.id && param1 === btn.pv; return (
+                  <button key={btn.pv} onClick={() => handleDirectBind(extPowerBehavior, btn.pv)} className={cardBtn(a)}>
+                    <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${a ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
                   </button>); })}
               </div></>
             )}
@@ -486,7 +482,7 @@ export const BehaviorBindingPicker = ({
 
         {activeCategory === "macro" && (
           <div className="flex flex-col gap-3 panel-fade-enter">
-            <p className="text-xs text-base-content/40 font-medium">宏可以按顺序执行多个按键操作。需在固件 .keymap 中预先定义。</p>
+            <p className="text-xs text-base-content/40 font-medium text-center">宏可以按顺序执行多个按键操作。需在固件 .keymap 中预先定义。</p>
             {macroBehaviors.length > 0 ? (
               <>
                 <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
@@ -499,13 +495,7 @@ export const BehaviorBindingPicker = ({
             ) : (
               <div className="glass rounded-2xl p-5 text-center">
                 <p className="text-sm text-base-content/50 mb-2">当前固件中没有定义宏</p>
-                <p className="text-xs text-base-content/30 mb-4">在 .keymap 文件中添加宏定义后重新编译固件即可使用</p>
-                <div className="bg-base-content/5 rounded-xl p-4 text-left text-[11px] font-mono text-base-content/35 leading-relaxed">
-                  <div>{"/ {"}</div><div className="pl-4">{"macros {"}</div><div className="pl-8">{"copy_paste: copy_paste {"}</div>
-                  <div className="pl-12">{'compatible = "zmk,behavior-macro";'}</div><div className="pl-12">{"#binding-cells = <0>;"}</div>
-                  <div className="pl-12">{"wait-ms = <30>; tap-ms = <40>;"}</div><div className="pl-12">{"bindings = <&kp LC(C)>, <&kp LC(V)>;"}</div>
-                  <div className="pl-8">{"};"}</div><div className="pl-4">{"};"}</div><div>{"};"}</div>
-                </div>
+                <p className="text-xs text-base-content/30">在 .keymap 文件中添加宏定义后重新编译固件即可使用</p>
               </div>
             )}
           </div>
@@ -513,7 +503,7 @@ export const BehaviorBindingPicker = ({
 
         {activeCategory === "advanced" && (
           <div className="flex flex-col gap-4 panel-fade-enter">
-            <p className="text-xs text-base-content/40 font-medium">高级模式支持所有 ZMK 行为</p>
+            <p className="text-xs text-base-content/40 font-medium text-center">高级模式支持所有 ZMK 行为</p>
             <div>
               <label className="text-xs text-base-content/40 block mb-1.5 font-medium">行为类型</label>
               <select value={behaviorId}
@@ -524,9 +514,9 @@ export const BehaviorBindingPicker = ({
             </div>
             {metadata && <BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} />}
             <div className="h-px bg-base-content/5 mt-2" />
-            <div className="flex gap-4 text-xs text-base-content/30">
+            <div className="flex gap-4 text-xs text-base-content/30 justify-center">
               <span>ARC 改键器 · 基于 ZMK 固件</span>
-              <span className="ml-auto cursor-pointer hover:text-base-content/60 transition-colors"
+              <span className="cursor-pointer hover:text-base-content/60 transition-colors"
                 onClick={() => window.open("https://github.com/fangxinghai/ARC-keyboard", "_blank")}>关于</span>
               <span className="cursor-pointer hover:text-base-content/60 transition-colors"
                 onClick={() => window.open("https://github.com/nicell/zmk-studio/blob/main/LICENSE", "_blank")}>许可证</span>
