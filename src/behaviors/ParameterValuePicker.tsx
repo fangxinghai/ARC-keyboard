@@ -1,50 +1,123 @@
-import { BehaviorBindingParametersSet } from "@zmkfirmware/zmk-studio-ts-client/behaviors";
-import { ParameterValuePicker } from "./ParameterValuePicker";
-import { validateValue } from "./parameters";
+import { BehaviorParameterValueDescription } from "@zmkfirmware/zmk-studio-ts-client/behaviors";
+import { HidUsagePicker } from "./HidUsagePicker";
 
-export interface BehaviorParametersPickerProps {
-  param1?: number;
-  param2?: number;
-  metadata: BehaviorBindingParametersSet[];
-  layers: { id: number; name: string }[];
-  onParam1Changed: (value?: number) => void;
-  onParam2Changed: (value?: number) => void;
+// ─── ZMK 参数名翻译 ───
+const PARAM_NAME_ZH: Record<string, string> = {
+  "Next Profile": "下一配置",
+  "Previous Profile": "上一配置",
+  "Select Profile": "选择配置",
+  "Clear All Profiles": "清除所有配对",
+  "Clear Selected Profile": "清除当前配对",
+  "Disconnect Profile": "断开蓝牙",
+  "Toggle On/Off": "开/关",
+  "Turn On": "开启",
+  "Turn Off": "关闭",
+  "Hue Up": "色相 +",
+  "Hue Down": "色相 -",
+  "Saturation Up": "饱和度 +",
+  "Saturation Down": "饱和度 -",
+  "Brightness Up": "亮度 +",
+  "Brightness Down": "亮度 -",
+  "Speed Up": "速度 +",
+  "Speed Down": "速度 -",
+  "Next Effect": "下一灯效",
+  "Previous Effect": "上一灯效",
+  "Profile": "配置编号",
+  "USB": "USB",
+  "BLE": "蓝牙",
+};
+
+function translateParamName(name: string): string {
+  if (PARAM_NAME_ZH[name]) return PARAM_NAME_ZH[name];
+  for (const [en, zh] of Object.entries(PARAM_NAME_ZH)) {
+    if (name.toLowerCase().includes(en.toLowerCase())) return zh;
+  }
+  return name;
 }
 
-export const BehaviorParametersPicker = ({
-  param1, param2, metadata, layers, onParam1Changed, onParam2Changed,
-}: BehaviorParametersPickerProps) => {
-  if (param1 === undefined) {
+export interface ParameterValuePickerProps {
+  value?: number;
+  values: BehaviorParameterValueDescription[];
+  layers: { id: number; name: string }[];
+  onValueChanged: (value?: number) => void;
+}
+
+export const ParameterValuePicker = ({
+  value, values, layers, onValueChanged,
+}: ParameterValuePickerProps) => {
+  if (values.length == 0) {
+    return <></>;
+  } else if (values.every((v) => v.constant !== undefined)) {
     return (
-      <div className="flex flex-col gap-2 items-center">
-        <ParameterValuePicker
-          values={metadata.flatMap((m) => m.param1)}
-          onValueChanged={onParam1Changed}
-          layers={layers}
-        />
+      <div className="flex flex-wrap gap-2">
+        {values.map((v) => {
+          const isActive = value === v.constant;
+          const zhName = translateParamName(v.name);
+          return (
+            <button
+              key={v.constant}
+              onClick={() => onValueChanged(v.constant)}
+              className={`flex flex-col items-center justify-center rounded-xl text-xs min-h-[42px] px-4 py-1.5 cursor-pointer transition-all duration-150 ease-out ${
+                isActive
+                  ? "bg-primary text-white font-semibold shadow-[0_2px_8px_rgba(0,122,255,0.3)]"
+                  : "glass-light text-base-content/60 hover:text-base-content/90 active:scale-[0.97]"
+              }`}
+            >
+              <span className="font-medium">{zhName}</span>
+              {zhName !== v.name && (
+                <span className={`text-[9px] mt-0.5 ${isActive ? "opacity-60" : "opacity-25"}`}>{v.name}</span>
+              )}
+            </button>
+          );
+        })}
       </div>
     );
-  } else {
-    const set = metadata.find((s) =>
-      validateValue(layers.map((l) => l.id), param1, s.param1)
-    );
-    return (
-      <div className="flex flex-col gap-3 items-center">
-        <ParameterValuePicker
-          values={metadata.flatMap((m) => m.param1)}
-          value={param1}
-          layers={layers}
-          onValueChanged={onParam1Changed}
-        />
-        {(set?.param2?.length || 0) > 0 && (
-          <ParameterValuePicker
-            values={set!.param2}
-            value={param2}
-            layers={layers}
-            onValueChanged={onParam2Changed}
+  } else if (values.length == 1) {
+    if (values[0].range) {
+      return (
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-base-content/50 font-medium">{translateParamName(values[0].name)}:</label>
+          <input
+            type="number"
+            min={values[0].range.min}
+            max={values[0].range.max}
+            value={value}
+            className="h-9 w-20 rounded-xl glass border-0 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/30 text-center font-medium text-base-content/70"
+            onChange={(e) => onValueChanged(parseInt(e.target.value))}
           />
-        )}
-      </div>
-    );
+        </div>
+      );
+    } else if (values[0].hidUsage) {
+      return (
+        <HidUsagePicker
+          onValueChanged={onValueChanged}
+          label={translateParamName(values[0].name)}
+          value={value}
+          usagePages={[
+            { id: 7, min: 4, max: values[0].hidUsage.keyboardMax },
+            { id: 12, max: values[0].hidUsage.consumerMax },
+          ]}
+        />
+      );
+    } else if (values[0].layerId) {
+      return (
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-base-content/50 font-medium">{translateParamName(values[0].name)}:</label>
+          <select
+            value={value}
+            className="h-9 rounded-xl glass border-0 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/30 font-medium text-base-content/70 appearance-none"
+            onChange={(e) => onValueChanged(parseInt(e.target.value))}
+          >
+            {layers.map(({ name, id }) => (
+              <option key={id} value={id}>{name}</option>
+            ))}
+          </select>
+        </div>
+      );
+    }
+  } else {
+    console.log("Not sure how to handle", values);
+    return <p className="text-xs text-base-content/30">复合参数</p>;
   }
+  return <></>;
 };
