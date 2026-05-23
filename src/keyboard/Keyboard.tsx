@@ -200,7 +200,7 @@ export default function Keyboard() {
         {/* ═══ 底部编辑栏 — 固定高度，不随内容变化 ═══ */}
         {selKey !== undefined && (
           <div className="flex-shrink-0 flex justify-center pb-1">
-            <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-4 w-full max-w-4xl overflow-y-auto" style={{ height: "350px" }}>
+            <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-4 w-full max-w-4xl overflow-y-auto" style={{ height: "380px" }}>
               {hasRealData && selectedBinding ? (
                 <BehaviorBindingPicker
                   binding={selectedBinding}
