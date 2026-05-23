@@ -193,7 +193,6 @@ export const BehaviorBindingPicker = ({
   useLayoutEffect(updateCapsule, [updateCapsule]);
   useEffect(() => { window.addEventListener("resize", updateCapsule); return () => window.removeEventListener("resize", updateCapsule); }, [updateCapsule]);
 
-
   const metadata = useMemo(() => behaviors.find((b) => b.id == behaviorId)?.metadata, [behaviorId, behaviors]);
   const sortedBehaviors = useMemo(() => [...behaviors].sort((a, b) => a.displayName.localeCompare(b.displayName)), [behaviors]);
   const keyPressBehavior = useMemo(() => behaviors.find((b) => b.displayName.toLowerCase().includes("key") && b.displayName.toLowerCase().includes("press")), [behaviors]);
@@ -205,7 +204,6 @@ export const BehaviorBindingPicker = ({
   const otherBehaviors = useMemo(() => behaviors.filter((b) => { const n = b.displayName.toLowerCase(); const skip = (n.includes("key") && n.includes("press")) || n.includes("rgb") || n.includes("underglow") || n.includes("backlight") || (n.includes("ext") && n.includes("power")) || n.includes("layer") || n.includes("momentary") || n.includes("conditional") || n.includes("macro") || n.includes("bluetooth") || n === "bt"; return !skip; }), [behaviors]);
   const macroBehaviors = useMemo(() => behaviors.filter((b) => b.displayName.toLowerCase().includes("macro")), [behaviors]);
 
-  // 蓝牙 behavior 的 metadata
   const btMetadata = useMemo(() => btBehavior ? behaviors.find((b) => b.id === btBehavior.id)?.metadata : undefined, [btBehavior, behaviors]);
 
   useEffect(() => {
@@ -253,16 +251,16 @@ export const BehaviorBindingPicker = ({
   }, [behaviorId, keyPressBehavior, currentModFlags, currentBaseHidId]);
 
   const keyBtn = (active: boolean, isMod: boolean, extra = "") => {
-    if (active && isMod) return `flex items-center justify-center rounded-[10px] text-[11px] font-semibold text-white bg-accent shadow-[0_2px_8px_rgba(255,149,0,0.3)] ring-1 ring-accent/30 transition-all duration-150 ease-out ${extra}`;
-    if (active) return `flex items-center justify-center rounded-[10px] text-[11px] font-semibold text-white bg-primary shadow-[0_2px_8px_rgba(0,122,255,0.3)] transition-all duration-150 ease-out ${extra}`;
-    if (isMod) return `flex items-center justify-center rounded-[10px] text-[11px] font-medium glass-light text-base-content/60 hover:text-base-content/90 active:scale-[0.97] transition-all duration-150 ease-out bg-accent/5 ${extra}`;
-    return `flex items-center justify-center rounded-[10px] text-[11px] font-medium glass-light text-base-content/60 hover:text-base-content/90 active:scale-[0.97] transition-all duration-150 ease-out ${extra}`;
+    if (active && isMod) return `flex items-center justify-center rounded-[10px] text-[11px] font-semibold text-white bg-accent shadow-[0_2px_8px_rgba(255,149,0,0.3)] ring-1 ring-accent/30 ${extra}`;
+    if (active) return `flex items-center justify-center rounded-[10px] text-[11px] font-semibold text-white bg-primary shadow-[0_2px_8px_rgba(0,122,255,0.3)] ${extra}`;
+    if (isMod) return `flex items-center justify-center rounded-[10px] text-[11px] font-medium glass-light text-base-content/60 hover:text-base-content/90 bg-accent/5 ${extra}`;
+    return `flex items-center justify-center rounded-[10px] text-[11px] font-medium glass-light text-base-content/60 hover:text-base-content/90 ${extra}`;
   };
 
   const cardBtn = (active: boolean) =>
-    `flex flex-col items-center justify-center rounded-xl text-xs min-h-[46px] px-3 py-1.5 cursor-pointer transition-all duration-150 ease-out ${
+    `flex flex-col items-center justify-center rounded-xl text-xs min-h-[46px] px-3 py-1.5 cursor-pointer ${
       active ? "bg-primary text-white font-semibold shadow-[0_2px_8px_rgba(0,122,255,0.3)]"
-             : "glass-light text-base-content/60 hover:text-base-content/90 active:scale-[0.97]"
+             : "glass-light text-base-content/60 hover:text-base-content/90"
     }`;
 
   return (
@@ -273,7 +271,7 @@ export const BehaviorBindingPicker = ({
           <div className="absolute top-1 bottom-1 rounded-xl bg-primary tab-capsule pointer-events-none" style={{ left: capsuleStyle.left, width: capsuleStyle.width }} />
           {CATEGORIES.map((cat) => (
             <button key={cat.id} data-tab={cat.id} onClick={() => setActiveCategory(cat.id)}
-              className={`relative z-10 flex items-center gap-1 px-3 py-1.5 text-xs rounded-xl transition-colors duration-200 ease-out ${
+              className={`relative z-10 flex items-center gap-1 px-3 py-1.5 text-xs rounded-xl ${
                 activeCategory === cat.id ? "text-white font-semibold" : "text-base-content/45 hover:text-base-content/70"
               }`}>
               {cat.icon && <Bluetooth className="w-3 h-3" />}
@@ -287,14 +285,14 @@ export const BehaviorBindingPicker = ({
             <span className="text-xs font-semibold text-primary">{comboDescription}</span>
             {currentModFlags !== 0 && (
               <button onClick={() => { if (keyPressBehavior) setParam1(buildParam1(0, currentBaseUsage)); }}
-                className="text-[10px] text-base-content/25 hover:text-error transition-colors ml-0.5 cursor-pointer">✕</button>
+                className="text-[10px] text-base-content/25 hover:text-error ml-0.5 cursor-pointer">✕</button>
             )}
           </div>
         )}
       </div>
 
-      {/* ═══ 面板内容 ═══ */}
-      <div ref={contentRef} className="overflow-hidden transition-[height] duration-350 ease-out">
+      {/* ═══ 面板内容 — 无 ref、无高度动画、无弹簧 ═══ */}
+      <div>
 
         {activeCategory === "keyboard" && (
           <div className="panel-fade-enter flex justify-center">
@@ -345,15 +343,13 @@ export const BehaviorBindingPicker = ({
           </div>
         )}
 
-        {/* ═══ 蓝牙 — 使用 ZMK 原版参数系统 ═══ */}
         {activeCategory === "bluetooth" && (
-          <div className="flex flex-col gap-3 panel-fade-enter">
+          <div className="flex flex-col gap-3 panel-fade-enter items-center">
             {btBehavior ? (
               <>
-                <p className="text-xs text-base-content/40 font-medium flex items-center gap-1.5 justify-center">
+                <p className="text-xs text-base-content/40 font-medium flex items-center gap-1.5">
                   <Bluetooth className="w-3.5 h-3.5" /> 选择蓝牙操作绑定到当前按键
                 </p>
-                {/* 先选中蓝牙 behavior */}
                 {behaviorId !== btBehavior.id && (
                   <div className="flex justify-center">
                     <button onClick={() => { setBehaviorId(btBehavior.id); setParam1(0); setParam2(0); }}
@@ -362,23 +358,15 @@ export const BehaviorBindingPicker = ({
                     </button>
                   </div>
                 )}
-                {/* 使用 ZMK 原版参数选择器 */}
                 {behaviorId === btBehavior.id && btMetadata && (
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-full max-w-md">
-                      <BehaviorParametersPicker
-                        metadata={btMetadata}
-                        param1={param1}
-                        param2={param2}
-                        layers={layers}
-                        onParam1Changed={setParam1}
-                        onParam2Changed={setParam2}
-                      />
-                    </div>
-                  </div>
-                )}
-                {behaviorId === btBehavior.id && (
-                  <p className="text-[10px] text-base-content/30 text-center">已选择蓝牙功能，请在上方选择具体操作</p>
+                  <BehaviorParametersPicker
+                    metadata={btMetadata}
+                    param1={param1}
+                    param2={param2}
+                    layers={layers}
+                    onParam1Changed={setParam1}
+                    onParam2Changed={setParam2}
+                  />
                 )}
               </>
             ) : (
@@ -490,9 +478,9 @@ export const BehaviorBindingPicker = ({
             <div className="h-px bg-base-content/5 mt-2" />
             <div className="flex gap-4 text-xs text-base-content/30 justify-center">
               <span>ARC 改键器 · 基于 ZMK 固件</span>
-              <span className="cursor-pointer hover:text-base-content/60 transition-colors"
+              <span className="cursor-pointer hover:text-base-content/60"
                 onClick={() => window.open("https://github.com/fangxinghai/ARC-keyboard", "_blank")}>关于</span>
-              <span className="cursor-pointer hover:text-base-content/60 transition-colors"
+              <span className="cursor-pointer hover:text-base-content/60"
                 onClick={() => window.open("https://github.com/nicell/zmk-studio/blob/main/LICENSE", "_blank")}>许可证</span>
             </div>
           </div>
