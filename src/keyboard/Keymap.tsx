@@ -8,7 +8,7 @@ import { HidUsageLabel } from "./HidUsageLabel";
 type BehaviorMap = Record<number, GetBehaviorDetailsResponse>;
 
 // ─── Behavior 参数的中文描述 ───
-const PARAM_LABELS: Record<string, Record<number, string>> = {};
+
 
 // 通用参数名翻译
 function getParamLabel(behaviorName: string, param1: number, behavior?: GetBehaviorDetailsResponse): string {
