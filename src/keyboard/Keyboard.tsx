@@ -31,10 +31,10 @@ function useBehaviors(): BehaviorMap {
     async function startRequest() {
       setBehaviors({});
       if (!connection.conn) return;
-      let behavior_list = await call_rpc(connection.conn, { behaviors: { listAllBehaviors: true } });
+      let bl = await call_rpc(connection.conn, { behaviors: { listAllBehaviors: true } });
       if (!ignore) {
         let bm: BehaviorMap = {};
-        for (let bid of behavior_list.behaviors?.listAllBehaviors?.behaviors || []) {
+        for (let bid of bl.behaviors?.listAllBehaviors?.behaviors || []) {
           if (ignore) break;
           let bd = await call_rpc(connection.conn, { behaviors: { getBehaviorDetails: { behaviorId: bid } } });
           let d = bd?.behaviors?.getBehaviorDetails;
@@ -134,18 +134,18 @@ export default function Keyboard() {
 
   let doUpdateBinding = useCallback((binding: BehaviorBinding) => {
     if (!keymap || selKey === undefined) return;
-    const layer = selLayer, layerId = keymap.layers[layer].id, keyPosition = selKey;
-    const oldBinding = keymap.layers[layer].bindings[keyPosition];
+    const layer = selLayer, layerId = keymap.layers[layer].id, kp = selKey;
+    const old = keymap.layers[layer].bindings[kp];
     undoRedo?.(async () => {
       if (!conn.conn) throw new Error("Not connected");
-      let r = await call_rpc(conn.conn, { keymap: { setLayerBinding: { layerId, keyPosition, binding } } });
+      let r = await call_rpc(conn.conn, { keymap: { setLayerBinding: { layerId, keyPosition: kp, binding } } });
       if (r.keymap?.setLayerBinding === SetLayerBindingResponse.SET_LAYER_BINDING_RESP_OK)
-        setKeymap(produce((d: any) => { d.layers[layer].bindings[keyPosition] = binding; }));
+        setKeymap(produce((d: any) => { d.layers[layer].bindings[kp] = binding; }));
       return async () => {
         if (!conn.conn) return;
-        let r2 = await call_rpc(conn.conn, { keymap: { setLayerBinding: { layerId, keyPosition, binding: oldBinding } } });
+        let r2 = await call_rpc(conn.conn, { keymap: { setLayerBinding: { layerId, keyPosition: kp, binding: old } } });
         if (r2.keymap?.setLayerBinding === SetLayerBindingResponse.SET_LAYER_BINDING_RESP_OK)
-          setKeymap(produce((d: any) => { d.layers[layer].bindings[keyPosition] = oldBinding; }));
+          setKeymap(produce((d: any) => { d.layers[layer].bindings[kp] = old; }));
       };
     });
   }, [conn, keymap, undoRedo, selLayer, selKey]);
@@ -156,133 +156,89 @@ export default function Keyboard() {
   }, [keymap, selLayer, selKey]);
 
   const moveLayer = useCallback((s: number, e: number) => {
-    const doMove = async (a: number, b: number) => {
-      if (!conn.conn) return;
-      let r = await call_rpc(conn.conn, { keymap: { moveLayer: { startIndex: a, destIndex: b } } });
-      if (r.keymap?.moveLayer?.ok) { setKeymap(r.keymap.moveLayer.ok); setSelLayer(b); }
-    };
+    const doMove = async (a: number, b: number) => { if (!conn.conn) return; let r = await call_rpc(conn.conn, { keymap: { moveLayer: { startIndex: a, destIndex: b } } }); if (r.keymap?.moveLayer?.ok) { setKeymap(r.keymap.moveLayer.ok); setSelLayer(b); } };
     undoRedo?.(async () => { await doMove(s, e); return () => doMove(e, s); });
   }, [undoRedo]);
 
   const addLayer = useCallback(() => {
-    async function doAdd(): Promise<number> {
-      if (!conn.conn || !keymap) throw new Error("Not connected");
-      const r = await call_rpc(conn.conn, { keymap: { addLayer: {} } });
-      if (r.keymap?.addLayer?.ok) {
-        setKeymap(produce((d: any) => { d.layers.push(r.keymap!.addLayer!.ok!.layer); d.availableLayers--; }));
-        setSelLayer(keymap.layers.length);
-        return r.keymap.addLayer.ok.index;
-      }
-      throw new Error("Failed");
-    }
-    async function doRemove(i: number) {
-      if (!conn.conn) throw new Error("Not connected");
-      const r = await call_rpc(conn.conn, { keymap: { removeLayer: { layerIndex: i } } });
-      if (r.keymap?.removeLayer?.ok) setKeymap(produce((d: any) => { d.layers.splice(i, 1); d.availableLayers++; }));
-    }
+    async function doAdd(): Promise<number> { if (!conn.conn || !keymap) throw new Error("Not connected"); const r = await call_rpc(conn.conn, { keymap: { addLayer: {} } }); if (r.keymap?.addLayer?.ok) { setKeymap(produce((d: any) => { d.layers.push(r.keymap!.addLayer!.ok!.layer); d.availableLayers--; })); setSelLayer(keymap.layers.length); return r.keymap.addLayer.ok.index; } throw new Error("Failed"); }
+    async function doRemove(i: number) { if (!conn.conn) throw new Error("Not connected"); const r = await call_rpc(conn.conn, { keymap: { removeLayer: { layerIndex: i } } }); if (r.keymap?.removeLayer?.ok) setKeymap(produce((d: any) => { d.layers.splice(i, 1); d.availableLayers++; })); }
     undoRedo?.(async () => { let i = await doAdd(); return () => doRemove(i); });
   }, [conn, undoRedo, keymap]);
 
   const removeLayer = useCallback(() => {
-    async function doRemove(i: number) {
-      if (!conn.conn || !keymap) throw new Error("Not connected");
-      const r = await call_rpc(conn.conn, { keymap: { removeLayer: { layerIndex: i } } });
-      if (r.keymap?.removeLayer?.ok) {
-        if (i == keymap.layers.length - 1) setSelLayer(i - 1);
-        setKeymap(produce((d: any) => { d.layers.splice(i, 1); d.availableLayers++; }));
-      }
-    }
-    async function doRestore(lid: number, at: number) {
-      if (!conn.conn) throw new Error("Not connected");
-      const r = await call_rpc(conn.conn, { keymap: { restoreLayer: { layerId: lid, atIndex: at } } });
-      if (r.keymap?.restoreLayer?.ok) {
-        setKeymap(produce((d: any) => { d.layers.splice(at, 0, r!.keymap!.restoreLayer!.ok); d.availableLayers--; }));
-        setSelLayer(at);
-      }
-    }
-    if (!keymap) throw new Error("No keymap");
-    let i = selLayer, lid = keymap.layers[i].id;
+    async function doRemove(i: number) { if (!conn.conn || !keymap) throw new Error("Not connected"); const r = await call_rpc(conn.conn, { keymap: { removeLayer: { layerIndex: i } } }); if (r.keymap?.removeLayer?.ok) { if (i == keymap.layers.length - 1) setSelLayer(i - 1); setKeymap(produce((d: any) => { d.layers.splice(i, 1); d.availableLayers++; })); } }
+    async function doRestore(lid: number, at: number) { if (!conn.conn) throw new Error("Not connected"); const r = await call_rpc(conn.conn, { keymap: { restoreLayer: { layerId: lid, atIndex: at } } }); if (r.keymap?.restoreLayer?.ok) { setKeymap(produce((d: any) => { d.layers.splice(at, 0, r!.keymap!.restoreLayer!.ok); d.availableLayers--; })); setSelLayer(at); } }
+    if (!keymap) throw new Error("No keymap"); let i = selLayer, lid = keymap.layers[i].id;
     undoRedo?.(async () => { await doRemove(i); return () => doRestore(lid, i); });
   }, [conn, undoRedo, selLayer]);
 
   const changeLayerName = useCallback((id: number, oldName: string, newName: string) => {
-    async function go(layerId: number, name: string) {
-      if (!conn.conn) throw new Error("Not connected");
-      const r = await call_rpc(conn.conn, { keymap: { setLayerProps: { layerId, name } } });
-      if (r.keymap?.setLayerProps == SetLayerPropsResponse.SET_LAYER_PROPS_RESP_OK)
-        setKeymap(produce((d: any) => { const li = d.layers.findIndex((l: Layer) => l.id == layerId); d.layers[li].name = name; }));
-    }
+    async function go(layerId: number, name: string) { if (!conn.conn) throw new Error("Not connected"); const r = await call_rpc(conn.conn, { keymap: { setLayerProps: { layerId, name } } }); if (r.keymap?.setLayerProps == SetLayerPropsResponse.SET_LAYER_PROPS_RESP_OK) setKeymap(produce((d: any) => { const li = d.layers.findIndex((l: Layer) => l.id == layerId); d.layers[li].name = name; })); }
     undoRedo?.(async () => { await go(id, newName); return async () => { await go(id, oldName); }; });
   }, [conn, undoRedo, keymap]);
 
-  useEffect(() => {
-    if (!keymap?.layers) return;
-    if (selLayer > keymap.layers.length - 1) setSelLayer(keymap.layers.length - 1);
-  }, [keymap, selLayer]);
+  useEffect(() => { if (!keymap?.layers) return; if (selLayer > keymap.layers.length - 1) setSelLayer(keymap.layers.length - 1); }, [keymap, selLayer]);
 
   const hasRealData = !!(layouts && keymap && Object.keys(behaviors).length > 0);
 
   return (
-    <div className="grid grid-cols-[auto_1fr] grid-rows-[1fr_auto] max-w-full min-w-0 min-h-0 overflow-hidden p-2 pt-2 gap-2">
+    <div className="flex h-full overflow-hidden p-2 pt-0 gap-2">
       {/* 左侧面板 */}
-      <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-3 flex flex-col gap-3 row-span-2 min-w-[130px]">
+      <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-3 flex flex-col gap-3 shrink-0 min-w-[130px] my-1">
         {layouts ? (
           <PhysicalLayoutPicker layouts={layouts} selectedPhysicalLayoutIndex={selPhysIdx} onPhysicalLayoutClicked={doSelectPhysicalLayout} />
         ) : (
-          <div className="text-xs text-base-content/25">
-            <p className="font-medium mb-1">Layout:</p>
-            <p className="text-base-content/15">未连接</p>
-          </div>
+          <div className="text-xs text-base-content/25"><p className="font-medium mb-1">Layout:</p><p className="text-base-content/15">未连接</p></div>
         )}
         {keymap ? (
           <LayerPicker layers={keymap.layers} selectedLayerIndex={selLayer} onLayerClicked={setSelLayer} onLayerMoved={moveLayer} canAdd={(keymap.availableLayers || 0) > 0} canRemove={(keymap.layers?.length || 0) > 1} onAddClicked={addLayer} onRemoveClicked={removeLayer} onLayerNameChanged={changeLayerName} />
         ) : (
-          <div className="text-xs text-base-content/25">
-            <p className="font-medium uppercase tracking-wider mb-1">Layers</p>
-            <div className="glass-light rounded-xl p-2 text-center text-base-content/15">Layer 0</div>
-          </div>
+          <div className="text-xs text-base-content/25"><p className="font-medium uppercase tracking-wider mb-1">Layers</p><div className="glass-light rounded-xl p-2 text-center text-base-content/15">Layer 0</div></div>
         )}
       </div>
 
-      {/* 中间键盘 */}
-      <div className="col-start-2 row-start-1 grid items-center justify-center relative min-w-0">
-        {hasRealData ? (
-          <>
-            <KeymapComp keymap={keymap!} layout={layouts![selPhysIdx]} behaviors={behaviors} scale={keymapScale} selectedLayerIndex={selLayer} selectedKeyPosition={selKey} onKeyPositionClicked={setSelKey} />
-            <select className="absolute top-1 right-1 h-7 rounded-lg px-2 text-xs glass border-0 outline-none cursor-pointer font-medium text-base-content/40"
-              value={keymapScale} onChange={(e) => setKeymapScale(deserializeLayoutZoom(e.target.value))}>
-              <option value="auto">自动</option>
-              <option value={0.5}>50%</option><option value={0.75}>75%</option>
-              <option value={1}>100%</option><option value={1.25}>125%</option><option value={1.5}>150%</option>
-            </select>
-          </>
-        ) : (
-          <PlaceholderKeyboard onKeyClicked={(i) => setSelKey(i)} />
-        )}
-      </div>
-
-      {/* ═══ 底部面板 — 垂直居中于键盘和屏幕底部之间 ═══ */}
-      {selKey !== undefined && (
-        <div className="col-start-2 row-start-2 flex justify-center items-center py-3">
-          <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-4 w-full max-w-4xl transition-[height] duration-300 ease-out">
-            {hasRealData && selectedBinding ? (
-              <BehaviorBindingPicker
-                binding={selectedBinding}
-                behaviors={Object.values(behaviors)}
-                layers={keymap!.layers.map(({ id, name }, li) => ({ id, name: name || li.toLocaleString() }))}
-                onBindingChanged={doUpdateBinding}
-              />
-            ) : (
-              <BehaviorBindingPicker
-                binding={{ behaviorId: 0, param1: 0, param2: 0 }}
-                behaviors={[]}
-                layers={[{ id: 0, name: "Layer 0" }]}
-                onBindingChanged={() => {}}
-              />
-            )}
-          </div>
+      {/* 右侧：键盘 + 编辑栏 纵向排列 */}
+      <div className="flex flex-col flex-1 min-w-0 my-1 gap-0">
+        {/* 键盘区域 — 自适应高度 */}
+        <div className="flex-shrink-0 grid items-center justify-center relative min-w-0 py-2">
+          {hasRealData ? (
+            <>
+              <KeymapComp keymap={keymap!} layout={layouts![selPhysIdx]} behaviors={behaviors} scale={keymapScale} selectedLayerIndex={selLayer} selectedKeyPosition={selKey} onKeyPositionClicked={setSelKey} />
+              <select className="absolute top-2 right-1 h-7 rounded-lg px-2 text-xs glass border-0 outline-none cursor-pointer font-medium text-base-content/40"
+                value={keymapScale} onChange={(e) => setKeymapScale(deserializeLayoutZoom(e.target.value))}>
+                <option value="auto">自动</option><option value={0.5}>50%</option><option value={0.75}>75%</option>
+                <option value={1}>100%</option><option value={1.25}>125%</option><option value={1.5}>150%</option>
+              </select>
+            </>
+          ) : (
+            <PlaceholderKeyboard onKeyClicked={(i) => setSelKey(i)} />
+          )}
         </div>
-      )}
+
+        {/* ═══ 编辑栏 — 占据键盘下方到屏幕底部的空间，垂直居中 ═══ */}
+        {selKey !== undefined && (
+          <div className="flex-1 flex items-center justify-center min-h-0">
+            <div className="glass-heavy rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-4 editor-panel">
+              {hasRealData && selectedBinding ? (
+                <BehaviorBindingPicker
+                  binding={selectedBinding}
+                  behaviors={Object.values(behaviors)}
+                  layers={keymap!.layers.map(({ id, name }, li) => ({ id, name: name || li.toLocaleString() }))}
+                  onBindingChanged={doUpdateBinding}
+                />
+              ) : (
+                <BehaviorBindingPicker
+                  binding={{ behaviorId: 0, param1: 0, param2: 0 }}
+                  behaviors={[]}
+                  layers={[{ id: 0, name: "Layer 0" }]}
+                  onBindingChanged={() => {}}
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
