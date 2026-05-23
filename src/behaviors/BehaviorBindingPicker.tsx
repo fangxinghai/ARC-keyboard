@@ -130,23 +130,16 @@ const SPECIAL_KEYS: QuickKey[] = [
 
 interface LightButton { zh: string; en: string; paramValue: number; }
 const RGB_BUTTONS: LightButton[] = [
-  { zh: "RGB 开/关", en: "Toggle", paramValue: 0 },
-  { zh: "RGB 开启", en: "On", paramValue: 1 },
-  { zh: "RGB 关闭", en: "Off", paramValue: 2 },
-  { zh: "色相 +", en: "Hue Up", paramValue: 3 },
-  { zh: "色相 -", en: "Hue Down", paramValue: 4 },
-  { zh: "饱和度 +", en: "Sat Up", paramValue: 5 },
-  { zh: "饱和度 -", en: "Sat Down", paramValue: 6 },
-  { zh: "亮度 +", en: "Bri Up", paramValue: 7 },
-  { zh: "亮度 -", en: "Bri Down", paramValue: 8 },
-  { zh: "速度 +", en: "Spd Up", paramValue: 9 },
-  { zh: "速度 -", en: "Spd Down", paramValue: 10 },
-  { zh: "下一灯效", en: "Next Eff", paramValue: 11 },
+  { zh: "RGB 开/关", en: "Toggle", paramValue: 0 }, { zh: "RGB 开启", en: "On", paramValue: 1 },
+  { zh: "RGB 关闭", en: "Off", paramValue: 2 }, { zh: "色相 +", en: "Hue Up", paramValue: 3 },
+  { zh: "色相 -", en: "Hue Down", paramValue: 4 }, { zh: "饱和度 +", en: "Sat Up", paramValue: 5 },
+  { zh: "饱和度 -", en: "Sat Down", paramValue: 6 }, { zh: "亮度 +", en: "Bri Up", paramValue: 7 },
+  { zh: "亮度 -", en: "Bri Down", paramValue: 8 }, { zh: "速度 +", en: "Spd Up", paramValue: 9 },
+  { zh: "速度 -", en: "Spd Down", paramValue: 10 }, { zh: "下一灯效", en: "Next Eff", paramValue: 11 },
   { zh: "上一灯效", en: "Prev Eff", paramValue: 12 },
 ];
 
-// ─── 蓝牙按钮定义 ───
-interface BtButton { zh: string; en: string; paramValue: number; icon?: boolean; }
+interface BtButton { zh: string; en: string; paramValue: number; }
 const BT_BUTTONS: BtButton[] = [
   { zh: "蓝牙 配置 0", en: "BT SEL 0", paramValue: 0 },
   { zh: "蓝牙 配置 1", en: "BT SEL 1", paramValue: 1 },
@@ -164,52 +157,38 @@ const LAYER_NAMES: Record<string, string> = {
   "To Layer": "切换到层 (TO)", "Toggle Layer": "切换层 (TG)",
   "Default Layer": "默认层 (DF)", "Conditional Layer": "条件层",
 };
-
 const OTHER_NAMES: Record<string, string> = {
-  "Bluetooth": "蓝牙", "Output Selection": "输出切换",
-  "None": "无", "Transparent": "透明", "Reset": "重启",
-  "Bootloader": "引导模式", "Caps Word": "大写词", "Key Toggle": "按键锁定",
-  "Sticky Key": "粘滞键", "Sticky Layer": "粘滞层",
-  "Mod-Tap": "修饰/按键 (MT)", "Hold-Tap": "长按/点按 (HT)",
-  "Tap Dance": "多次点击 (TD)", "Studio Unlock": "Studio 解锁",
-  "Soft Off": "软关机", "Key Repeat": "按键重复", "Grave/Escape": "~/Esc",
-  "External Power": "外部电源",
+  "Bluetooth": "蓝牙", "Output Selection": "输出切换", "None": "无", "Transparent": "透明",
+  "Reset": "重启", "Bootloader": "引导模式", "Caps Word": "大写词", "Key Toggle": "按键锁定",
+  "Sticky Key": "粘滞键", "Sticky Layer": "粘滞层", "Mod-Tap": "修饰/按键 (MT)",
+  "Hold-Tap": "长按/点按 (HT)", "Tap Dance": "多次点击 (TD)", "Studio Unlock": "Studio 解锁",
+  "Soft Off": "软关机", "Key Repeat": "按键重复", "Grave/Escape": "~/Esc", "External Power": "外部电源",
 };
 
-// ═══ Tab 定义 — 新增蓝牙 ═══
 type CategoryId = "keyboard" | "media" | "special" | "bluetooth" | "other" | "lighting" | "macro" | "advanced";
 const CATEGORIES: { id: CategoryId; label: string; icon?: boolean }[] = [
-  { id: "keyboard", label: "按键" },
-  { id: "media", label: "媒体" },
-  { id: "special", label: "特色键" },
-  { id: "bluetooth", label: "蓝牙", icon: true },
-  { id: "other", label: "其他" },
-  { id: "lighting", label: "灯光" },
-  { id: "macro", label: "宏按键" },
-  { id: "advanced", label: "高级" },
+  { id: "keyboard", label: "按键" }, { id: "media", label: "媒体" },
+  { id: "special", label: "特色键" }, { id: "bluetooth", label: "蓝牙", icon: true },
+  { id: "other", label: "其他" }, { id: "lighting", label: "灯光" },
+  { id: "macro", label: "宏按键" }, { id: "advanced", label: "高级" },
 ];
 
 function matchName(name: string, map: Record<string, string>): string {
   if (map[name]) return map[name];
-  for (const [en, zh] of Object.entries(map)) {
-    if (name.toLowerCase().includes(en.toLowerCase())) return zh;
-  }
+  for (const [en, zh] of Object.entries(map)) { if (name.toLowerCase().includes(en.toLowerCase())) return zh; }
   return name;
 }
 
-const MODIFIER_HID_IDS: Record<number, number> = {
-  0xe0: 0x01, 0xe1: 0x02, 0xe2: 0x04, 0xe3: 0x08,
-  0xe4: 0x10, 0xe5: 0x20, 0xe6: 0x40, 0xe7: 0x80,
-};
+const MODIFIER_HID_IDS: Record<number, number> = { 0xe0:0x01, 0xe1:0x02, 0xe2:0x04, 0xe3:0x08, 0xe4:0x10, 0xe5:0x20, 0xe6:0x40, 0xe7:0x80 };
 function isModifierKey(key: QuickKey): boolean { return key.page === 7 && key.id >= 0xe0 && key.id <= 0xe7; }
 function getModFlag(hidId: number): number { return MODIFIER_HID_IDS[hidId] || 0; }
-function extractModFlags(param1: number): number { return (param1 >> 24) & 0xff; }
-function extractBaseUsage(param1: number): number { return param1 & 0x00ffffff; }
-function buildParam1(modFlags: number, baseUsage: number): number { return ((modFlags & 0xff) << 24) | (baseUsage & 0x00ffffff); }
-function modFlagsToLabels(flags: number): string[] {
+function extractModFlags(p: number): number { return (p >> 24) & 0xff; }
+function extractBaseUsage(p: number): number { return p & 0x00ffffff; }
+function buildParam1(m: number, b: number): number { return ((m & 0xff) << 24) | (b & 0x00ffffff); }
+function modFlagsToLabels(f: number): string[] {
   const l: string[] = [];
-  if(flags&0x01)l.push("LCtrl");if(flags&0x02)l.push("LShift");if(flags&0x04)l.push("LAlt");if(flags&0x08)l.push("LGUI");
-  if(flags&0x10)l.push("RCtrl");if(flags&0x20)l.push("RShift");if(flags&0x40)l.push("RAlt");if(flags&0x80)l.push("RGUI");
+  if(f&0x01)l.push("LCtrl");if(f&0x02)l.push("LShift");if(f&0x04)l.push("LAlt");if(f&0x08)l.push("LGUI");
+  if(f&0x10)l.push("RCtrl");if(f&0x20)l.push("RShift");if(f&0x40)l.push("RAlt");if(f&0x80)l.push("RGUI");
   return l;
 }
 function findKeyLabel(hidId: number): string | undefined {
@@ -224,7 +203,6 @@ export const BehaviorBindingPicker = ({
   const [param1, setParam1] = useState<number | undefined>(binding.param1);
   const [param2, setParam2] = useState<number | undefined>(binding.param2);
   const [activeCategory, setActiveCategory] = useState<CategoryId>("keyboard");
-  const [prevCategory, setPrevCategory] = useState<CategoryId>("keyboard");
 
   // ─── 苹果胶囊 Tab ───
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -243,19 +221,14 @@ export const BehaviorBindingPicker = ({
 
   // ─── 内容区高度过渡 ───
   const contentRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState<number | "auto">("auto");
-
   useEffect(() => {
-    if (!contentRef.current) return;
     const el = contentRef.current;
-    // 先记录当前高度
+    if (!el) return;
     const oldH = el.offsetHeight;
-    // 让内容自由渲染
     el.style.height = "auto";
-    // 获取新高度
     requestAnimationFrame(() => {
       const newH = el.scrollHeight;
-      if (oldH !== newH) {
+      if (Math.abs(oldH - newH) > 2) {
         el.style.height = oldH + "px";
         requestAnimationFrame(() => {
           el.style.height = newH + "px";
@@ -293,17 +266,12 @@ export const BehaviorBindingPicker = ({
   const handleQuickKey = useCallback((page: number, id: number) => {
     if (!keyPressBehavior) return;
     if (page === 7 && isModifierKey({ label: "", page, id })) {
-      const flag = getModFlag(id);
-      const newFlags = currentModFlags ^ flag;
-      setBehaviorId(keyPressBehavior.id);
-      setParam1(buildParam1(newFlags, currentBaseUsage));
-      setParam2(0);
+      const newFlags = currentModFlags ^ getModFlag(id);
+      setBehaviorId(keyPressBehavior.id); setParam1(buildParam1(newFlags, currentBaseUsage)); setParam2(0);
     } else {
       const baseUsage = hid_usage_from_page_and_id(page, id);
       const preservedMods = (behaviorId === keyPressBehavior.id) ? currentModFlags : 0;
-      setBehaviorId(keyPressBehavior.id);
-      setParam1(buildParam1(preservedMods, baseUsage));
-      setParam2(0);
+      setBehaviorId(keyPressBehavior.id); setParam1(buildParam1(preservedMods, baseUsage)); setParam2(0);
     }
   }, [keyPressBehavior, behaviorId, currentModFlags, currentBaseUsage]);
 
@@ -324,7 +292,6 @@ export const BehaviorBindingPicker = ({
     return [...mods, ...(baseLabel ? [baseLabel] : [])].join(" + ");
   }, [behaviorId, keyPressBehavior, currentModFlags, currentBaseHidId]);
 
-  // ─── 按钮样式 ───
   const keyBtn = (active: boolean, isMod: boolean, extra = "") => {
     if (active && isMod) return `flex items-center justify-center rounded-[10px] text-[11px] font-semibold text-white bg-accent shadow-[0_2px_8px_rgba(255,149,0,0.3)] ring-1 ring-accent/30 transition-all duration-150 ${extra}`;
     if (active) return `flex items-center justify-center rounded-[10px] text-[11px] font-semibold text-white bg-primary shadow-[0_2px_8px_rgba(0,122,255,0.3)] transition-all duration-150 ${extra}`;
@@ -334,59 +301,41 @@ export const BehaviorBindingPicker = ({
 
   const cardBtn = (active: boolean) =>
     `flex flex-col items-center justify-center rounded-xl text-xs min-h-[46px] px-3 py-1.5 transition-all duration-150 ${
-      active
-        ? "bg-primary text-white font-semibold shadow-[0_2px_8px_rgba(0,122,255,0.3)]"
-        : "glass-light text-base-content/60 hover:text-base-content/90 active:scale-95"
+      active ? "bg-primary text-white font-semibold shadow-[0_2px_8px_rgba(0,122,255,0.3)]"
+             : "glass-light text-base-content/60 hover:text-base-content/90 active:scale-95"
     }`;
-
-  const switchCategory = (id: CategoryId) => {
-    setPrevCategory(activeCategory);
-    setActiveCategory(id);
-  };
 
   return (
     <div className="flex flex-col gap-3">
-      {/* ═══ Tab 栏 — 苹果胶囊滑动 ═══ */}
+      {/* ═══ Tab 栏 ═══ */}
       <div className="flex items-center gap-2">
         <div ref={tabsRef} className="relative flex gap-0.5 p-1 rounded-2xl glass">
-          {/* 胶囊背景 */}
-          <div
-            className="absolute top-1 bottom-1 rounded-xl bg-primary tab-capsule pointer-events-none"
-            style={{ left: capsuleStyle.left, width: capsuleStyle.width }}
-          />
+          <div className="absolute top-1 bottom-1 rounded-xl bg-primary tab-capsule pointer-events-none" style={{ left: capsuleStyle.left, width: capsuleStyle.width }} />
           {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              data-tab={cat.id}
-              onClick={() => switchCategory(cat.id)}
+            <button key={cat.id} data-tab={cat.id} onClick={() => setActiveCategory(cat.id)}
               className={`relative z-10 flex items-center gap-1 px-3 py-1.5 text-xs rounded-xl transition-colors duration-300 ${
-                activeCategory === cat.id
-                  ? "text-white font-semibold"
-                  : "text-base-content/45 hover:text-base-content/70"
-              }`}
-            >
+                activeCategory === cat.id ? "text-white font-semibold" : "text-base-content/45 hover:text-base-content/70"
+              }`}>
               {cat.icon && <Bluetooth className="w-3 h-3" />}
               {cat.label}
             </button>
           ))}
         </div>
-
         {comboDescription && activeCategory === "keyboard" && (
           <div className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-xl glass panel-fade-enter">
             <span className="text-[10px] text-base-content/35">当前：</span>
             <span className="text-xs font-semibold text-primary">{comboDescription}</span>
             {currentModFlags !== 0 && (
               <button onClick={() => { if (keyPressBehavior) setParam1(buildParam1(0, currentBaseUsage)); }}
-                className="text-[10px] text-base-content/25 hover:text-error transition-colors ml-0.5 cursor-pointer" title="清除修饰键">✕</button>
+                className="text-[10px] text-base-content/25 hover:text-error transition-colors ml-0.5 cursor-pointer">✕</button>
             )}
           </div>
         )}
       </div>
 
-      {/* ═══ 面板内容 — 带高度过渡 ═══ */}
+      {/* ═══ 面板内容 ═══ */}
       <div ref={contentRef} className="overflow-hidden transition-[height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
 
-        {/* 1. 键盘 — 固定宽高比居中 */}
         {activeCategory === "keyboard" && (
           <div className="panel-fade-enter flex justify-center">
             <div className="w-full max-w-[720px]" style={{ aspectRatio: "17/6" }}>
@@ -411,7 +360,6 @@ export const BehaviorBindingPicker = ({
           </div>
         )}
 
-        {/* 2. 媒体 */}
         {activeCategory === "media" && (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(95px,1fr))] gap-2 panel-fade-enter">
             {MEDIA_KEYS.map((key) => {
@@ -427,7 +375,6 @@ export const BehaviorBindingPicker = ({
           </div>
         )}
 
-        {/* 3. 特色键 */}
         {activeCategory === "special" && (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-2 panel-fade-enter">
             {SPECIAL_KEYS.map((key) => {
@@ -438,7 +385,6 @@ export const BehaviorBindingPicker = ({
           </div>
         )}
 
-        {/* 4. 蓝牙 — 新 Tab */}
         {activeCategory === "bluetooth" && (
           <div className="flex flex-col gap-3 panel-fade-enter">
             <p className="text-xs text-base-content/40 font-medium flex items-center gap-1.5">
@@ -449,11 +395,8 @@ export const BehaviorBindingPicker = ({
                 {BT_BUTTONS.map((btn) => {
                   const isActive = behaviorId === btBehavior.id && param1 === btn.paramValue;
                   return (
-                    <button key={btn.paramValue} onClick={() => handleLightButton(btBehavior, btn.paramValue)}
-                      className={cardBtn(isActive)}>
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <Bluetooth className="w-3 h-3" />{btn.zh}
-                      </span>
+                    <button key={btn.paramValue} onClick={() => handleLightButton(btBehavior, btn.paramValue)} className={cardBtn(isActive)}>
+                      <span className="flex items-center gap-1.5 font-medium"><Bluetooth className="w-3 h-3" />{btn.zh}</span>
                       <span className={`text-[9px] mt-0.5 ${isActive ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
                     </button>
                   );
@@ -468,20 +411,18 @@ export const BehaviorBindingPicker = ({
           </div>
         )}
 
-        {/* 5. 其他 */}
         {activeCategory === "other" && (
           <div className="flex flex-col gap-4 panel-fade-enter">
             {layerBehaviors.length > 0 && (
               <div>
                 <p className="text-xs text-base-content/40 mb-2 font-medium">层切换</p>
                 <div className="grid grid-cols-[repeat(auto-fill,minmax(115px,1fr))] gap-2">
-                  {layerBehaviors.map((b) => {
-                    const zh = matchName(b.displayName, LAYER_NAMES);
-                    return (<button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={cardBtn(behaviorId === b.id)}>
+                  {layerBehaviors.map((b) => { const zh = matchName(b.displayName, LAYER_NAMES); return (
+                    <button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={cardBtn(behaviorId === b.id)}>
                       <span className="font-medium leading-tight">{zh}</span>
                       {zh !== b.displayName && <span className={`text-[9px] mt-0.5 ${behaviorId === b.id ? "opacity-70" : "opacity-30"}`}>{b.displayName}</span>}
-                    </button>);
-                  })}
+                    </button>
+                  ); })}
                 </div>
                 {metadata && layerBehaviors.some((b) => b.id === behaviorId) && (
                   <div className="mt-3"><BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} /></div>
@@ -491,13 +432,12 @@ export const BehaviorBindingPicker = ({
             <div>
               <p className="text-xs text-base-content/40 mb-2 font-medium">其他功能</p>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(115px,1fr))] gap-2">
-                {otherBehaviors.map((b) => {
-                  const zh = matchName(b.displayName, OTHER_NAMES);
-                  return (<button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={cardBtn(behaviorId === b.id)}>
+                {otherBehaviors.map((b) => { const zh = matchName(b.displayName, OTHER_NAMES); return (
+                  <button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={cardBtn(behaviorId === b.id)}>
                     <span className="font-medium leading-tight">{zh}</span>
                     {zh !== b.displayName && <span className={`text-[9px] mt-0.5 ${behaviorId === b.id ? "opacity-70" : "opacity-30"}`}>{b.displayName}</span>}
-                  </button>);
-                })}
+                  </button>
+                ); })}
               </div>
               {metadata && otherBehaviors.some((b) => b.id === behaviorId) && (
                 <div className="mt-3"><BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} /></div>
@@ -506,56 +446,53 @@ export const BehaviorBindingPicker = ({
           </div>
         )}
 
-        {/* 6. 灯光 */}
         {activeCategory === "lighting" && (
           <div className="flex flex-col gap-4 panel-fade-enter">
             {underglowBehavior ? (
               <><p className="text-xs text-base-content/40 font-medium">RGB 灯效控制</p>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(105px,1fr))] gap-2">
-                {RGB_BUTTONS.map((btn) => {
-                  const isActive = behaviorId === underglowBehavior.id && param1 === btn.paramValue;
-                  return (<button key={btn.paramValue} onClick={() => handleLightButton(underglowBehavior, btn.paramValue)} className={cardBtn(isActive)}>
+                {RGB_BUTTONS.map((btn) => { const isActive = behaviorId === underglowBehavior.id && param1 === btn.paramValue; return (
+                  <button key={btn.paramValue} onClick={() => handleLightButton(underglowBehavior, btn.paramValue)} className={cardBtn(isActive)}>
                     <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${isActive ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
-                  </button>);
-                })}
+                  </button>
+                ); })}
               </div></>
             ) : (<div className="glass rounded-2xl p-5 text-center text-sm text-base-content/40">固件中未启用 RGB 灯效功能</div>)}
             {backlightBehavior && (
               <><p className="text-xs text-base-content/40 mt-1 font-medium">背光控制</p>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(105px,1fr))] gap-2">
                 {[{zh:"背光 开/关",en:"Toggle",pv:0},{zh:"背光 开",en:"On",pv:1},{zh:"背光 关",en:"Off",pv:2},{zh:"背光 亮度+",en:"Bri Up",pv:3},{zh:"背光 亮度-",en:"Bri Down",pv:4},{zh:"背光 循环",en:"Cycle",pv:5}].map((btn) => {
-                  const isActive = behaviorId === backlightBehavior.id && param1 === btn.pv;
-                  return (<button key={btn.pv} onClick={() => handleLightButton(backlightBehavior, btn.pv)} className={cardBtn(isActive)}>
+                  const isActive = behaviorId === backlightBehavior.id && param1 === btn.pv; return (
+                  <button key={btn.pv} onClick={() => handleLightButton(backlightBehavior, btn.pv)} className={cardBtn(isActive)}>
                     <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${isActive ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
-                  </button>);
-                })}
+                  </button>); })}
               </div></>
             )}
             {extPowerBehavior && (
               <><p className="text-xs text-base-content/40 mt-1 font-medium">外部电源</p>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(105px,1fr))] gap-2">
                 {[{zh:"电源 开/关",en:"Toggle",pv:0},{zh:"电源 开",en:"On",pv:1},{zh:"电源 关",en:"Off",pv:2}].map((btn) => {
-                  const isActive = behaviorId === extPowerBehavior.id && param1 === btn.pv;
-                  return (<button key={btn.pv} onClick={() => handleLightButton(extPowerBehavior, btn.pv)} className={cardBtn(isActive)}>
+                  const isActive = behaviorId === extPowerBehavior.id && param1 === btn.pv; return (
+                  <button key={btn.pv} onClick={() => handleLightButton(extPowerBehavior, btn.pv)} className={cardBtn(isActive)}>
                     <span className="font-medium">{btn.zh}</span><span className={`text-[9px] mt-0.5 ${isActive ? "opacity-70" : "opacity-30"}`}>{btn.en}</span>
-                  </button>);
-                })}
+                  </button>); })}
               </div></>
             )}
           </div>
         )}
 
-        {/* 7. 宏 */}
         {activeCategory === "macro" && (
           <div className="flex flex-col gap-3 panel-fade-enter">
             <p className="text-xs text-base-content/40 font-medium">宏可以按顺序执行多个按键操作。需在固件 .keymap 中预先定义。</p>
             {macroBehaviors.length > 0 ? (
-              <><div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
-                {macroBehaviors.map((b) => (<button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={cardBtn(behaviorId === b.id)}>{b.displayName}</button>))}
-              </div>
-              {metadata && macroBehaviors.some((b) => b.id === behaviorId) && (
-                <BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} />
-              )}</>
+              <>
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
+                  {macroBehaviors.map((b) => (<button key={b.id} onClick={() => handleSelectBehavior(b.id)} className={cardBtn(behaviorId === b.id)}>{b.displayName}</button>))}
+                </div>
+                {metadata && macroBehaviors.some((b) => b.id === behaviorId) && (
+                  <BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} />
+                )}
+              </>
             ) : (
               <div className="glass rounded-2xl p-5 text-center">
                 <p className="text-sm text-base-content/50 mb-2">当前固件中没有定义宏</p>
@@ -571,7 +508,6 @@ export const BehaviorBindingPicker = ({
           </div>
         )}
 
-        {/* 8. 高级 — 含关于/许可证 */}
         {activeCategory === "advanced" && (
           <div className="flex flex-col gap-4 panel-fade-enter">
             <p className="text-xs text-base-content/40 font-medium">高级模式支持所有 ZMK 行为，包括 Mod-Tap、Hold-Tap、宏等</p>
@@ -584,8 +520,6 @@ export const BehaviorBindingPicker = ({
               </select>
             </div>
             {metadata && <BehaviorParametersPicker metadata={metadata} param1={param1} param2={param2} layers={layers} onParam1Changed={setParam1} onParam2Changed={setParam2} />}
-
-            {/* 关于 / 许可证 */}
             <div className="h-px bg-base-content/5 mt-2" />
             <div className="flex gap-4 text-xs text-base-content/30">
               <span>ARC 改键器 · 基于 ZMK 固件</span>
