@@ -173,7 +173,6 @@ function findKeyLabel(h: number): string | undefined {
   return undefined;
 }
 
-
 export const BehaviorBindingPicker = ({
   binding, layers, behaviors, onBindingChanged,
 }: BehaviorBindingPickerProps) => {
@@ -265,8 +264,8 @@ export const BehaviorBindingPicker = ({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* ═══ Tab 栏 ═══ */}
-      <div className="flex items-center justify-center gap-2 flex-wrap">
+      {/* ═══ Tab 栏 — 独立一行居中 ═══ */}
+      <div className="flex flex-col items-center gap-2">
         <div ref={tabsRef} className="relative flex gap-0.5 p-1 rounded-2xl glass">
           <div className="absolute top-1 bottom-1 rounded-xl bg-primary tab-capsule pointer-events-none" style={{ left: capsuleStyle.left, width: capsuleStyle.width }} />
           {CATEGORIES.map((cat) => (
@@ -279,19 +278,20 @@ export const BehaviorBindingPicker = ({
             </button>
           ))}
         </div>
+        {/* 组合键预览 — Tab 下方独立行，不影响 Tab 宽度 */}
         {comboDescription && activeCategory === "keyboard" && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass panel-fade-enter">
-            <span className="text-[10px] text-base-content/35">当前：</span>
-            <span className="text-xs font-semibold text-primary">{comboDescription}</span>
+          <div className="flex items-center gap-2 px-3 py-1 rounded-xl glass text-[11px]">
+            <span className="text-base-content/30">当前：</span>
+            <span className="font-semibold text-primary">{comboDescription}</span>
             {currentModFlags !== 0 && (
               <button onClick={() => { if (keyPressBehavior) setParam1(buildParam1(0, currentBaseUsage)); }}
-                className="text-[10px] text-base-content/25 hover:text-error ml-0.5 cursor-pointer">✕</button>
+                className="text-base-content/20 hover:text-error ml-0.5 cursor-pointer">✕</button>
             )}
           </div>
         )}
       </div>
 
-      {/* ═══ 面板内容 — 无 ref、无高度动画、无弹簧 ═══ */}
+      {/* ═══ 面板内容 ═══ */}
       <div>
 
         {activeCategory === "keyboard" && (
