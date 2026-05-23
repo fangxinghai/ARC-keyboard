@@ -7,7 +7,7 @@ import { call_rpc } from "./rpc/logging";
 import type { Notification } from "@zmkfirmware/zmk-studio-ts-client/studio";
 import { ConnectionState, ConnectionContext } from "./rpc/ConnectionContext";
 import { Dispatch, useCallback, useEffect, useState } from "react";
-import { ConnectModal, TransportFactory } from "./ConnectModal";
+import { TransportFactory } from "./ConnectModal";
 
 import type { RpcTransport } from "@zmkfirmware/zmk-studio-ts-client/transport/index";
 import { connect as gatt_connect } from "@zmkfirmware/zmk-studio-ts-client/transport/gatt";
@@ -34,7 +34,7 @@ declare global {
   }
 }
 
-const TRANSPORTS: TransportFactory[] = [
+export const TRANSPORTS: TransportFactory[] = [
   navigator.serial && { label: "USB", connect: serial_connect },
   ...(navigator.bluetooth && navigator.userAgent.indexOf("Linux") >= 0
     ? [{ label: "BLE", connect: gatt_connect }]
@@ -60,7 +60,6 @@ async function listen_for_notifications(
       let { done, value } = await reader.read();
       if (done) break;
       if (!value) continue;
-      console.log("Notification", value);
       pub("rpc_notification", value);
       const subsystem = Object.entries(value).find(([_k, v]) => v !== undefined);
       if (!subsystem) continue;
@@ -174,7 +173,6 @@ function App() {
       <LockStateContext.Provider value={lockState}>
         <UndoRedoContext.Provider value={doIt}>
           <UnlockModal />
-          <ConnectModal open={!conn.conn} transports={TRANSPORTS} onTransportCreated={onConnect} />
 
           {/* ═══ 水彩背景 ═══ */}
           <WatercolorBackground />
@@ -186,7 +184,7 @@ function App() {
             <rect width="100%" height="100%" filter="url(#grain)"/>
           </svg>
 
-          {/* ═══ 主内容 ═══ */}
+          {/* ═══ 主内容 — 始终显示 ═══ */}
           <div className="relative z-10 text-base-content h-full max-h-[100vh] w-full max-w-[100vw] inline-grid grid-cols-[auto] grid-rows-[auto_1fr] overflow-hidden">
             <AppHeader
               connectedDeviceLabel={connectedDeviceName}
@@ -194,6 +192,8 @@ function App() {
               onUndo={undo} onRedo={redo}
               onSave={save} onDiscard={discard}
               onDisconnect={disconnect} onResetSettings={resetSettings}
+              transports={TRANSPORTS}
+              onTransportCreated={onConnect}
             />
             <Keyboard />
           </div>
