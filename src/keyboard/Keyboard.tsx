@@ -87,7 +87,7 @@ function PlaceholderKeyboard({ onKeyClicked }: { onKeyClicked?: (i: number) => v
               ))}
             </div>
           </div>
-          <span className="block text-center text-[10px] font-medium mt-2" style={{ color: "light-dark(rgba(0,0,0,0.2), rgba(255,255,255,0.25))" }}>按键</span>
+          <span className="block text-center text-[10px] font-medium mt-2" style={{ color: "light-dark(rgba(0,0,0,0.2), rgba(255,255,255,0.25))" }}> </span>
         </div>
         <div className="relative">
           <div className="group-frame p-3">
