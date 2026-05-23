@@ -23,7 +23,6 @@ body {
 @media (min-width: 2560px) { html { font-size: 20px; } }
 @media (min-width: 3840px) { html { font-size: 24px; } }
 
-/* ═══ 3 个动画球 ═══ */
 .arc-blob { position: absolute; border-radius: 50%; will-change: transform; transform: translateZ(0); }
 .arc-blob-1 {
   width: 55vmax; height: 55vmax; filter: blur(60px); top: -20%; left: -15%;
@@ -43,17 +42,15 @@ body {
 html.dark .arc-blob-1 { background: radial-gradient(circle at 40% 40%, rgba(255,55,95,0.5) 0%, rgba(255,120,60,0.15) 50%, transparent 70%); }
 html.dark .arc-blob-2 { background: radial-gradient(circle at 60% 30%, rgba(10,132,255,0.5) 0%, rgba(140,80,240,0.15) 50%, transparent 70%); }
 html.dark .arc-blob-3 { background: radial-gradient(circle at 50% 60%, rgba(140,70,255,0.45) 0%, rgba(180,100,255,0.12) 50%, transparent 70%); }
-@keyframes bd1 { 0%{transform:translate(0,0) scale(1) rotate(0deg)}100%{transform:translate(25vw,20vh) scale(1.15) rotate(30deg)} }
-@keyframes bd2 { 0%{transform:translate(0,0) scale(1) rotate(0deg)}100%{transform:translate(-20vw,15vh) scale(1.1) rotate(-25deg)} }
-@keyframes bd3 { 0%{transform:translate(0,0) scale(1.05) rotate(0deg)}100%{transform:translate(15vw,-20vh) scale(0.9) rotate(20deg)} }
+@keyframes bd1 { 0%{transform:translate(0,0) scale(1) rotate(0)}100%{transform:translate(25vw,20vh) scale(1.15) rotate(30deg)} }
+@keyframes bd2 { 0%{transform:translate(0,0) scale(1) rotate(0)}100%{transform:translate(-20vw,15vh) scale(1.1) rotate(-25deg)} }
+@keyframes bd3 { 0%{transform:translate(0,0) scale(1.05) rotate(0)}100%{transform:translate(15vw,-20vh) scale(0.9) rotate(20deg)} }
 
-/* ═══ 蒙版 ═══ */
 .white-wash { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: rgba(255,255,255,0.35); }
 html.dark .white-wash { background: rgba(0,0,0,0.3); }
 .noise-overlay { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.025; mix-blend-mode: multiply; }
 html.dark .noise-overlay { opacity: 0.04; mix-blend-mode: screen; }
 
-/* ═══ 毛玻璃 ═══ */
 .glass {
   background: light-dark(rgba(255,255,255,0.42), rgba(28,28,30,0.5));
   backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -70,24 +67,35 @@ html.dark .noise-overlay { opacity: 0.04; mix-blend-mode: screen; }
   border: 1px solid light-dark(rgba(255,255,255,0.4), rgba(255,255,255,0.05));
 }
 
-/* ═══ 动画 — 全部 ease-out，无弹簧 ═══ */
+/* ═══ 分组外框毛玻璃 ═══ */
+.group-frame {
+  background: light-dark(rgba(255,255,255,0.25), rgba(255,255,255,0.04));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid light-dark(rgba(255,255,255,0.4), rgba(255,255,255,0.06));
+  border-radius: 1rem;
+}
+
+/* ═══ 所有动画全部 ease-out，绝无弹簧 ═══ */
 .panel-fade-enter { animation: pfi 0.2s ease-out both; }
 @keyframes pfi { from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)} }
-.modal-overlay { animation: fi 0.2s ease-out both; }
+.modal-overlay { animation: fi 0.15s ease-out both; }
 .modal-content { animation: si 0.2s ease-out both; }
 @keyframes fi { from{opacity:0}to{opacity:1} }
 @keyframes si { from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)} }
 
-/* Tab 胶囊 — 纯 ease-out */
-.tab-capsule { transition: left 0.25s ease-out, width 0.25s ease-out; }
+.tab-capsule { transition: left 0.2s ease-out, width 0.2s ease-out; }
 
 .btn-apple {
   display: inline-flex; align-items: center; justify-content: center;
   border-radius: 0.625rem; font-weight: 500; cursor: pointer; user-select: none;
-  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, background-color 0.12s ease-out;
+  transition: background-color 0.1s ease-out, box-shadow 0.1s ease-out;
 }
-.btn-apple:hover { transform: scale(1.01); }
-.btn-apple:active { transform: scale(0.98); }
+
+/* ── 全局禁止 transform transition 避免弹簧 ── */
+button, [role="button"] {
+  transition: background-color 0.1s ease-out, box-shadow 0.1s ease-out, color 0.1s ease-out, opacity 0.1s ease-out !important;
+}
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
