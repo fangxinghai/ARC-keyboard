@@ -219,10 +219,8 @@ export const BehaviorBindingPicker = ({
       setBehaviorId(keyPressBehavior.id); setParam1(buildParam1(pm, bu)); setParam2(0);
     }
   }, [keyPressBehavior, behaviorId, currentModFlags, currentBaseUsage]);
-
-  const handleDirectBind = (beh: GetBehaviorDetailsResponse | undefined, pv: number) => {
-    if (!beh) return; setBehaviorId(beh.id); setParam1(pv); setParam2(0);
-  };
+  
+   const handleSelectBehavior = (bid: number) => { setBehaviorId(bid); setParam1(0); setParam2(0); };
 
   const isKeyActive = useCallback((page: number, id: number): boolean => {
     if (!keyPressBehavior || behaviorId !== keyPressBehavior.id) return false;
